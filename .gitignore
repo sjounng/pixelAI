@@ -1,0 +1,20 @@
+node_modules
+.next
+.next-localstorage.json
+out
+.env
+.env.local
+*.log
+.DS_Store
+.vercel
+.turbo
+coverage
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# 로컬 SQLite DB (Postgres로 마이그레이션 후 더 이상 사용 안 함)
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal

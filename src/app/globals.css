@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --grid: rgba(0, 0, 0, 0.08);
+}
+
+html,
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+.pixel-grid {
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md border-2 border-ink bg-paper px-4 py-2 text-sm font-semibold text-ink shadow-pixel transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none;
+}
+
+.btn-primary {
+  @apply btn bg-ink text-paper;
+}
+
+.btn-accent {
+  @apply btn bg-accent text-paper border-ink;
+}
+
+.card {
+  @apply rounded-lg border-2 border-ink bg-paper p-4 text-ink shadow-pixel;
+}
+
+.input {
+  @apply w-full rounded-md border-2 border-ink bg-paper px-3 py-2 text-sm text-ink shadow-pixel placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent2;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full border border-ink bg-paper px-2 py-0.5 text-xs font-medium text-ink;
+}
