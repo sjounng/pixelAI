@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import GenerateClient from "./GenerateClient";
 import { auth } from "@/auth";
-import { isProviderConfigured } from "@/lib/env";
+import { isProviderConfigured, isAdminEmail } from "@/lib/env";
 import { PROVIDERS, Provider } from "@/lib/ai";
 
 export const metadata = { title: "생성기 · PixelAI" };
@@ -14,5 +14,6 @@ export default async function GeneratePage() {
   const available: Provider[] = PROVIDERS.map((p) => p.id).filter((id) =>
     isProviderConfigured(id)
   );
-  return <GenerateClient available={available} />;
+  const isAdmin = isAdminEmail(session.user.email);
+  return <GenerateClient available={available} isAdmin={isAdmin} />;
 }

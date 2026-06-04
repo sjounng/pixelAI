@@ -15,7 +15,8 @@ function client(): GoogleGenAI {
 export async function generateWithGemini(
   prompt: string,
   size: 16 | 32,
-  referenceImage?: string
+  referenceImage?: string,
+  userId?: string | null
 ): Promise<Pixels> {
   const text = geminiUserPrompt(prompt, size, Boolean(referenceImage));
   const contents = referenceImage
@@ -28,7 +29,7 @@ export async function generateWithGemini(
       })()
     : text;
 
-  const system = await getSystemPrompt("gemini");
+  const system = await getSystemPrompt("gemini", userId);
   const resp = await client().models.generateContent({
     model: env.googleModel(),
     contents,

@@ -26,6 +26,7 @@ model User {
   transactions    TokenTransaction[]
   wishlist        Wishlist[]
   wishlistFolders WishlistFolder[]
+  promptOverrides PromptOverride[]
 }
 
 model Account {
@@ -113,12 +114,17 @@ model WishlistFolder {
   @@index([userId, createdAt])
 }
 
-// 시스템 프롬프트 런타임 오버라이드. provider별 row가 있으면 코드 기본값 대신 사용.
+// admin별 시스템 프롬프트 오버라이드. (provider, userId) 조합으로 1행. 본인 row가 있으면 그 admin 본인의 생성 호출에만 적용.
 model PromptOverride {
-  provider     String   @id // "claude" | "openai" | "gemini"
+  provider     String   // "claude" | "openai" | "gemini"
+  userId       String
   systemPrompt String
   updatedAt    DateTime @updatedAt
-  updatedBy    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, userId])
+  @@index([userId])
 }
 
 model TokenTransaction {

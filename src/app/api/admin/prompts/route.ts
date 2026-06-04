@@ -11,13 +11,15 @@ const PROVIDERS: Provider[] = ["claude", "openai", "gemini"];
 
 export async function GET() {
   const session = await auth();
-  if (!isAdminEmail(session?.user?.email)) {
+  const userId = session?.user?.id;
+  if (!userId || !isAdminEmail(session?.user?.email)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   try {
     const overrides = await prisma.promptOverride.findMany({
-      select: { provider: true, systemPrompt: true, updatedAt: true, updatedBy: true }
+      where: { userId },
+      select: { provider: true, systemPrompt: true, updatedAt: true }
     });
     const overrideMap = new Map(overrides.map((o) => [o.provider, o]));
 
@@ -29,8 +31,7 @@ export async function GET() {
         override: o
           ? {
               system_prompt: o.systemPrompt,
-              updated_at: o.updatedAt.toISOString(),
-              updated_by: o.updatedBy
+              updated_at: o.updatedAt.toISOString()
             }
           : null
       };

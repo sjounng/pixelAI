@@ -20,6 +20,7 @@ const COST: Record<Size, number> = { 16: 10, 32: 25 };
 
 interface Props {
   available: Provider[];
+  isAdmin: boolean;
 }
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -28,6 +29,8 @@ const EDIT_STORAGE_KEY = "pixelai:edit-source";
 const PENDING_STORAGE_KEY = "pixelai:pending-generation";
 const PENDING_MAX_AGE_MS = 150_000;
 const POLL_INTERVAL_MS = 2000;
+const NORMAL_PROMPT_LIMIT = 200;
+const ADMIN_PROMPT_LIMIT = 1000;
 
 function pixelsToDataUrl(pixels: string[][], n: number): string {
   const canvas = document.createElement("canvas");
@@ -48,7 +51,8 @@ function pixelsToDataUrl(pixels: string[][], n: number): string {
   return canvas.toDataURL("image/png");
 }
 
-export default function GenerateClient({ available }: Props) {
+export default function GenerateClient({ available, isAdmin }: Props) {
+  const promptLimit = isAdmin ? ADMIN_PROMPT_LIMIT : NORMAL_PROMPT_LIMIT;
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState<Size>(16);
   const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
@@ -319,11 +323,14 @@ export default function GenerateClient({ available }: Props) {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="예: 다이아몬드 검, 픽셀 고양이, 8비트 우주선"
-            rows={3}
+            rows={isAdmin ? 6 : 3}
             className="input mt-1 resize-none"
-            maxLength={200}
+            maxLength={promptLimit}
           />
-          <p className="mt-1 text-right text-xs text-gray-500">{prompt.length}/200</p>
+          <p className="mt-1 text-right text-xs text-gray-500">
+            {prompt.length}/{promptLimit}
+            {isAdmin && <span className="ml-2 text-amber-600">admin</span>}
+          </p>
         </div>
 
         <div>

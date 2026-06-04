@@ -17,7 +17,8 @@ type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 export async function generateWithClaude(
   prompt: string,
   size: 16 | 32,
-  referenceImage?: string
+  referenceImage?: string,
+  userId?: string | null
 ): Promise<Pixels> {
   const text = claudeUserPrompt(prompt, size, Boolean(referenceImage));
   const content = referenceImage
@@ -37,7 +38,7 @@ export async function generateWithClaude(
       })()
     : [{ type: "text" as const, text }];
 
-  const system = await getSystemPrompt("claude");
+  const system = await getSystemPrompt("claude", userId);
   const resp = await client().messages.create({
     model: env.anthropicModel(),
     max_tokens: 16000,

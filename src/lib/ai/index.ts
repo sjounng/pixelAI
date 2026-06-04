@@ -19,12 +19,13 @@ export async function generatePixelArt(
   provider: Provider,
   prompt: string,
   size: 16 | 32,
-  referenceImage?: string
+  referenceImage?: string,
+  userId?: string | null
 ): Promise<Pixels> {
   switch (provider) {
-    case "claude": return generateWithClaude(prompt, size, referenceImage);
-    case "openai": return generateWithOpenAI(prompt, size, referenceImage);
-    case "gemini": return generateWithGemini(prompt, size, referenceImage);
+    case "claude": return generateWithClaude(prompt, size, referenceImage, userId);
+    case "openai": return generateWithOpenAI(prompt, size, referenceImage, userId);
+    case "gemini": return generateWithGemini(prompt, size, referenceImage, userId);
   }
 }
 

@@ -15,7 +15,8 @@ function client(): OpenAI {
 export async function generateWithOpenAI(
   prompt: string,
   size: 16 | 32,
-  referenceImage?: string
+  referenceImage?: string,
+  userId?: string | null
 ): Promise<Pixels> {
   const text = openaiUserPrompt(prompt, size, Boolean(referenceImage));
   const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = referenceImage
@@ -25,7 +26,7 @@ export async function generateWithOpenAI(
       ]
     : [{ type: "text", text }];
 
-  const system = await getSystemPrompt("openai");
+  const system = await getSystemPrompt("openai", userId);
   const resp = await client().chat.completions.create({
     model: env.openaiModel(),
     max_completion_tokens: 16000,

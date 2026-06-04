@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getBalance } from "@/lib/users";
 import { prisma } from "@/lib/db";
 import { generatePixelArt, isProvider, Provider } from "@/lib/ai";
-import { isProviderConfigured, isUnlimitedTokensFor } from "@/lib/env";
+import { isProviderConfigured, isUnlimitedTokensFor, isAdminEmail } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -32,8 +32,9 @@ export async function POST(req: NextRequest) {
   if (!prompt) {
     return NextResponse.json({ error: "prompt_required" }, { status: 400 });
   }
-  if (prompt.length > 200) {
-    return NextResponse.json({ error: "prompt_too_long" }, { status: 400 });
+  const promptLimit = isAdminEmail(session?.user?.email) ? 1000 : 200;
+  if (prompt.length > promptLimit) {
+    return NextResponse.json({ error: "prompt_too_long", limit: promptLimit }, { status: 400 });
   }
   if (referenceImage) {
     if (!/^data:image\/(png|jpeg|webp|gif);base64,/.test(referenceImage)) {
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
   // row survives and the reaper handles it on the user's next history fetch.
   let pixels: string[][];
   try {
-    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage);
+    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage, userId);
   } catch (e) {
     const reason = (e as Error).message;
     await prisma.$transaction(async (tx) => {

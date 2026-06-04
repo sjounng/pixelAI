@@ -9,7 +9,6 @@ interface PromptItem {
   override: {
     system_prompt: string;
     updated_at: string;
-    updated_by: string | null;
   } | null;
 }
 
@@ -89,7 +88,7 @@ export default function AdminPromptsClient() {
   };
 
   const resetToDefault = async (p: Provider) => {
-    if (!confirm(`${p} 프롬프트를 코드 기본값으로 되돌릴까요? (DB 오버라이드 삭제)`)) return;
+    if (!confirm(`${p} 프롬프트를 코드 기본값으로 되돌릴까요? (내 오버라이드 삭제)`)) return;
     setStates((prev) => ({ ...prev, [p]: { ...prev[p], saving: true, status: null } }));
     const res = await fetch(`/api/admin/prompts/${p}`, { method: "DELETE" });
     if (res.ok) {
@@ -118,7 +117,7 @@ export default function AdminPromptsClient() {
       <header>
         <h1 className="text-3xl font-extrabold">프롬프트 관리</h1>
         <p className="mt-1 text-sm text-gray-600">
-          DB에 저장된 오버라이드는 코드 기본값보다 우선합니다. 비워두지 마세요. 저장 즉시 다음 생성부터 반영됩니다.
+          여기서 저장한 프롬프트는 <b>본인 계정의 생성 호출에만</b> 적용됩니다 (다른 admin과 격리). 비워두면 코드 기본값이 사용됩니다.
         </p>
       </header>
 
@@ -138,12 +137,9 @@ export default function AdminPromptsClient() {
                 {isOverridden ? (
                   <>
                     <span className="rounded bg-amber-200 px-2 py-0.5 font-semibold text-amber-900">
-                      DB 오버라이드 사용 중
+                      내 오버라이드 사용 중
                     </span>{" "}
-                    <span>
-                      ({new Date(it.override!.updated_at).toLocaleString("ko-KR")} ·{" "}
-                      {it.override!.updated_by ?? "—"})
-                    </span>
+                    <span>({new Date(it.override!.updated_at).toLocaleString("ko-KR")})</span>
                   </>
                 ) : (
                   <span className="rounded bg-gray-200 px-2 py-0.5 font-semibold text-gray-700">

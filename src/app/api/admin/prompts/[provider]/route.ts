@@ -14,13 +14,14 @@ interface Ctx {
 
 async function authorize(): Promise<string | null> {
   const session = await auth();
-  if (!isAdminEmail(session?.user?.email)) return null;
-  return session?.user?.email ?? null;
+  if (!session?.user?.id) return null;
+  if (!isAdminEmail(session.user.email)) return null;
+  return session.user.id;
 }
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
-  const email = await authorize();
-  if (!email) {
+  const userId = await authorize();
+  if (!userId) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const { provider } = await params;
@@ -38,27 +39,26 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   }
 
   const row = await prisma.promptOverride.upsert({
-    where: { provider },
-    update: { systemPrompt, updatedBy: email },
-    create: { provider, systemPrompt, updatedBy: email }
+    where: { provider_userId: { provider, userId } },
+    update: { systemPrompt },
+    create: { provider, userId, systemPrompt }
   });
   return NextResponse.json({
     provider: row.provider,
-    updated_at: row.updatedAt.toISOString(),
-    updated_by: row.updatedBy
+    updated_at: row.updatedAt.toISOString()
   });
 }
 
-// 오버라이드 제거 → 코드 기본값으로 롤백
+// 본인 오버라이드 제거 → 코드 기본값으로 롤백
 export async function DELETE(_req: NextRequest, { params }: Ctx) {
-  const email = await authorize();
-  if (!email) {
+  const userId = await authorize();
+  if (!userId) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const { provider } = await params;
   if (!isProvider(provider)) {
     return NextResponse.json({ error: "invalid_provider" }, { status: 400 });
   }
-  await prisma.promptOverride.deleteMany({ where: { provider } });
+  await prisma.promptOverride.deleteMany({ where: { provider, userId } });
   return NextResponse.json({ ok: true });
 }
