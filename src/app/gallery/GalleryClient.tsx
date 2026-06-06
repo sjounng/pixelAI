@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
 import type { Artwork } from "@/lib/artworks";
@@ -65,7 +66,9 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
         {items.map((a) => (
           <article key={a.id} className="card">
             <div className="relative">
-              <PixelPreview pixels={a.pixel_data} size={a.size} />
+              <Link href={`/gallery/${a.id}`} className="block">
+                <PixelPreview pixels={a.pixel_data} size={a.size} />
+              </Link>
               <div className="absolute right-1 top-1">
                 <WishlistStar
                   artworkId={a.id}
@@ -75,8 +78,10 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
                 />
               </div>
             </div>
-            <p className="mt-2 line-clamp-2 text-xs text-gray-700">{a.prompt}</p>
-            <p className="mt-0.5 text-[10px] text-gray-500">{a.size}×{a.size}</p>
+            <Link href={`/gallery/${a.id}`} className="block">
+              <p className="mt-2 line-clamp-2 text-xs text-gray-700">{a.prompt}</p>
+              <p className="mt-0.5 text-[10px] text-gray-500">{a.size}×{a.size}</p>
+            </Link>
           </article>
         ))}
       </div>
