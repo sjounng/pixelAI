@@ -21,6 +21,7 @@ const COST: Record<Size, number> = { 16: 10, 32: 25 };
 interface Props {
   available: Provider[];
   isAdmin: boolean;
+  webSearchAvailable: boolean;
 }
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -51,11 +52,12 @@ function pixelsToDataUrl(pixels: string[][], n: number): string {
   return canvas.toDataURL("image/png");
 }
 
-export default function GenerateClient({ available, isAdmin }: Props) {
+export default function GenerateClient({ available, isAdmin, webSearchAvailable }: Props) {
   const promptLimit = isAdmin ? ADMIN_PROMPT_LIMIT : NORMAL_PROMPT_LIMIT;
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState<Size>(16);
   const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
+  const [useSearch, setUseSearch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -262,13 +264,17 @@ export default function GenerateClient({ available, isAdmin }: Props) {
           prompt: marker.prompt,
           size,
           provider,
-          referenceImage: referenceImage ?? undefined
+          referenceImage: referenceImage ?? undefined,
+          // 웹 검색은 Claude + 참조 이미지 없을 때만 의미가 있음.
+          webSearch: provider === "claude" && !referenceImage ? useSearch : false
         })
       });
       const data = await res.json();
       localStorage.removeItem(PENDING_STORAGE_KEY);
       if (!res.ok) {
-        if (data.error === "insufficient_tokens") {
+        if (data.error === "session_invalid") {
+          setError("세션이 만료되었습니다. 로그아웃 후 다시 로그인해 주세요.");
+        } else if (data.error === "insufficient_tokens") {
           setError(`토큰이 부족합니다. (필요 ${data.cost} · 잔액 ${data.balance})`);
         } else if (data.error === "provider_not_configured") {
           setError(`${data.provider} API 키가 설정되지 않았습니다.`);
@@ -410,6 +416,36 @@ export default function GenerateClient({ available, isAdmin }: Props) {
             </p>
           )}
         </div>
+
+        {webSearchAvailable && provider === "claude" && !referenceImage && (
+          <div>
+            <label className="flex items-center justify-between gap-3 rounded-md border-2 border-ink bg-paper px-3 py-2 shadow-pixel">
+              <span className="text-sm">
+                <span className="font-bold">🔍 AI 검색</span>
+                <span className="ml-1 text-xs text-gray-500">
+                  생성 전 웹에서 대상을 조사 (정확도↑·다소 느려짐)
+                </span>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={useSearch}
+                onClick={() => setUseSearch((v) => !v)}
+                className={
+                  "relative h-6 w-11 shrink-0 rounded-full border-2 border-ink transition-colors " +
+                  (useSearch ? "bg-accent" : "bg-paper")
+                }
+              >
+                <span
+                  className={
+                    "absolute top-0.5 h-4 w-4 rounded-full border-2 border-ink bg-paper transition-all " +
+                    (useSearch ? "left-5" : "left-0.5")
+                  }
+                />
+              </button>
+            </label>
+          </div>
+        )}
 
         <div>
           <label className="text-sm font-bold">해상도</label>

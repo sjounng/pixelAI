@@ -20,10 +20,12 @@ export async function generatePixelArt(
   prompt: string,
   size: 16 | 32,
   referenceImage?: string,
-  userId?: string | null
+  userId?: string | null,
+  useSearch = false
 ): Promise<Pixels> {
   switch (provider) {
-    case "claude": return generateWithClaude(prompt, size, referenceImage, userId);
+    // 웹 검색(생성 전 참조 조사)은 현재 Claude에만 적용.
+    case "claude": return generateWithClaude(prompt, size, referenceImage, userId, useSearch);
     case "openai": return generateWithOpenAI(prompt, size, referenceImage, userId);
     case "gemini": return generateWithGemini(prompt, size, referenceImage, userId);
   }

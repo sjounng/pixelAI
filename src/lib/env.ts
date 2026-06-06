@@ -22,6 +22,8 @@ export const env = {
     const n = parseInt(process.env.ANTHROPIC_WEB_SEARCH_MAX_USES ?? "", 10);
     return Number.isFinite(n) && n > 0 ? n : 3;
   },
+  // 검색을 강제할지 여부. 켜면 첫 호출에서 web_search를 tool_choice로 강제 + 프롬프트 명시.
+  webSearchForce: () => /^(1|true|yes|on)$/i.test(process.env.ANTHROPIC_WEB_SEARCH_FORCE ?? ""),
 
   openaiApiKey: () => required("OPENAI_API_KEY"),
   openaiModel: () => optional("OPENAI_MODEL", "gpt-4o-2024-08-06"),

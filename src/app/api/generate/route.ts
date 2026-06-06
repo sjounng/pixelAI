@@ -17,7 +17,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  let body: { prompt?: string; size?: number; provider?: string; referenceImage?: string };
+  // JWT 세션엔 로그인 시점의 user id가 박혀 있어, DB 교체/초기화 후엔 그 id가
+  // 더 이상 존재하지 않을 수 있다. FK 크래시 대신 재로그인을 안내.
+  const userExists = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true }
+  });
+  if (!userExists) {
+    return NextResponse.json({ error: "session_invalid" }, { status: 401 });
+  }
+
+  let body: {
+    prompt?: string;
+    size?: number;
+    provider?: string;
+    referenceImage?: string;
+    webSearch?: boolean;
+  };
   try {
     body = await req.json();
   } catch {
@@ -28,6 +44,7 @@ export async function POST(req: NextRequest) {
   const size = body.size === 32 ? 32 : 16;
   const provider: Provider = isProvider(body.provider) ? body.provider : "claude";
   const referenceImage = body.referenceImage?.trim() || undefined;
+  const useSearch = body.webSearch === true;
 
   if (!prompt) {
     return NextResponse.json({ error: "prompt_required" }, { status: 400 });
@@ -120,7 +137,7 @@ export async function POST(req: NextRequest) {
   // row survives and the reaper handles it on the user's next history fetch.
   let pixels: string[][];
   try {
-    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage, userId);
+    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage, userId, useSearch);
   } catch (e) {
     const reason = (e as Error).message;
     await prisma.$transaction(async (tx) => {
