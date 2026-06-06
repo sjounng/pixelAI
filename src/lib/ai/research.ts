@@ -30,9 +30,10 @@ If the subject is generic/imaginary and needs no lookup, answer from your own kn
 export async function researchSubject(prompt: string): Promise<string | null> {
   if (!env.webSearchEnabled()) return null;
 
+  // web_search_20260209를 쓰면 API가 code_execution을 자동 주입한다(동적 필터링용).
+  // code_execution을 수동으로 넣으면 이름 충돌(400)이 나므로 web_search만 제공.
   const tools = [
-    { type: "web_search_20260209", name: "web_search", max_uses: env.webSearchMaxUses() },
-    { type: "code_execution_20250825", name: "code_execution" }
+    { type: "web_search_20260209", name: "web_search", max_uses: env.webSearchMaxUses() }
   ] as unknown as Anthropic.Tool[];
 
   const messages: Anthropic.MessageParam[] = [
