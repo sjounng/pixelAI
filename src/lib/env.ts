@@ -16,6 +16,13 @@ export const env = {
   anthropicApiKey: () => required("ANTHROPIC_API_KEY"),
   anthropicModel: () => optional("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
 
+  // 생성 전 웹 조사(web search) 사용 여부. 기본 비활성.
+  webSearchEnabled: () => /^(1|true|yes|on)$/i.test(process.env.ANTHROPIC_WEB_SEARCH ?? ""),
+  webSearchMaxUses: () => {
+    const n = parseInt(process.env.ANTHROPIC_WEB_SEARCH_MAX_USES ?? "", 10);
+    return Number.isFinite(n) && n > 0 ? n : 3;
+  },
+
   openaiApiKey: () => required("OPENAI_API_KEY"),
   openaiModel: () => optional("OPENAI_MODEL", "gpt-4o-2024-08-06"),
 

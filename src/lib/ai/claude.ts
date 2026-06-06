@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { parseJsonResponse, parseDataUrl, Pixels } from "./index";
 import { claudeUserPrompt } from "./prompts/claude";
 import { getSystemPrompt } from "./prompts/resolver";
+import { researchSubject } from "./research";
 
 let _client: Anthropic | null = null;
 
@@ -20,7 +21,9 @@ export async function generateWithClaude(
   referenceImage?: string,
   userId?: string | null
 ): Promise<Pixels> {
-  const text = claudeUserPrompt(prompt, size, Boolean(referenceImage));
+  // 참조 이미지가 없을 때만 웹 조사로 시각 정보를 보강 (이미지가 있으면 그게 우선 참조).
+  const research = referenceImage ? null : await researchSubject(prompt);
+  const text = claudeUserPrompt(prompt, size, Boolean(referenceImage), research ?? undefined);
   const content = referenceImage
     ? (() => {
         const { mediaType, base64 } = parseDataUrl(referenceImage);

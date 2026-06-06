@@ -86,7 +86,12 @@ Outline pass: fur-edge pixels use #3d1f0a; eye edges use #1a2d0a.
 
 Then emit ONLY the final JSON.`;
 
-export function claudeUserPrompt(prompt: string, size: number, hasReference = false): string {
+export function claudeUserPrompt(
+  prompt: string,
+  size: number,
+  hasReference = false,
+  research?: string
+): string {
   const sizeHint =
     size === 16
       ? "16×16 canvas. Classic pixel art resolution."
@@ -94,7 +99,10 @@ export function claudeUserPrompt(prompt: string, size: number, hasReference = fa
   const refHint = hasReference
     ? "\n\nA REFERENCE IMAGE is attached. Use it as the primary reference for subject shape, parts, and colors. Apply the pixel-art rendering rules above."
     : "";
-  return `Subject: ${prompt}${refHint}
+  const researchHint = research
+    ? `\n\nWEB RESEARCH (visual reference for accurate shape and colors — apply the pixel-art rules above, do not copy verbatim):\n${research}`
+    : "";
+  return `Subject: ${prompt}${refHint}${researchHint}
 
 Canvas size: ${size}x${size}
 ${sizeHint}
