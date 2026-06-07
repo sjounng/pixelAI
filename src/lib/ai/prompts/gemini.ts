@@ -86,7 +86,14 @@ Check the count: 4 legs present, 2 ears, tail, 2 eyes — all defining parts acc
 
 Then emit ONLY the final JSON.`;
 
-export function geminiUserPrompt(prompt: string, size: number, hasReference = false): string {
+import { basePixelsBlock } from "./shared";
+
+export function geminiUserPrompt(
+  prompt: string,
+  size: number,
+  hasReference = false,
+  basePixels?: string[][]
+): string {
   const sizeHint =
     size === 16
       ? "16×16 canvas. Classic pixel art resolution."
@@ -94,7 +101,7 @@ export function geminiUserPrompt(prompt: string, size: number, hasReference = fa
   const refHint = hasReference
     ? "\n\nA REFERENCE IMAGE is attached. Use it as the primary reference for subject shape, parts, and colors. Apply the pixel-art rendering rules above."
     : "";
-  return `Subject: ${prompt}${refHint}
+  return `Subject: ${prompt}${refHint}${basePixelsBlock(basePixels)}
 
 Canvas size: ${size}x${size}
 ${sizeHint}

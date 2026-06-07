@@ -29,9 +29,23 @@ export default function MyPageClient() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   // StrictMode 등으로 IntersectionObserver가 중복 발화해도 한 번만 로드되도록.
   const inFlightRef = useRef(false);
+
+  // 카드 메뉴(햄버거) 외부 클릭 시 닫기.
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest("[data-card-menu]")) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpenId]);
 
   const fetchPage = useCallback(
     async (
@@ -124,13 +138,14 @@ export default function MyPageClient() {
     }
   };
 
-  const editInGenerator = (a: Artwork) => {
+  const regenerate = (a: Artwork) => {
     sessionStorage.setItem(
       EDIT_STORAGE_KEY,
       JSON.stringify({
         prompt: a.prompt,
         size: a.size,
-        pixels: a.pixel_data
+        pixels: a.pixel_data,
+        mode: "regenerate"
       })
     );
     router.push("/generate");
@@ -178,7 +193,7 @@ export default function MyPageClient() {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {items.map((a) => (
                 <article key={a.id} className="card">
-                  <div className="relative">
+                  <div className="group relative">
                     <Link
                       href={`/mypage/${a.id}`}
                       className="block cursor-pointer transition-opacity hover:opacity-80"
@@ -186,7 +201,7 @@ export default function MyPageClient() {
                     >
                       <PixelPreview pixels={a.pixel_data} size={a.size} />
                     </Link>
-                    <div className="absolute right-1 top-1">
+                    <div className="absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                       <WishlistStar
                         artworkId={a.id}
                         initialFolderId={a.id in wishlistMap ? wishlistMap[a.id] : undefined}
@@ -201,17 +216,66 @@ export default function MyPageClient() {
                   <div className="mt-2 flex items-center justify-between text-[10px]">
                     <span className={a.is_public ? "text-emerald-600" : "text-gray-400"}>
                       {a.is_public ? "공개" : "비공개"}
+                      {a.edited_by_human ? " · ✏️사람" : ""}
                     </span>
                     <span className="text-gray-400">{a.size}×{a.size}</span>
                   </div>
-                  <div className="mt-2 flex gap-1">
-                    <button onClick={() => togglePublic(a)} className="btn flex-1 text-xs">
-                      {a.is_public ? "비공개" : "공개"}
+                  <div className="relative mt-2" data-card-menu>
+                    <button
+                      onClick={() => setMenuOpenId(menuOpenId === a.id ? null : a.id)}
+                      aria-haspopup="menu"
+                      aria-expanded={menuOpenId === a.id}
+                      className="btn w-full text-xs"
+                    >
+                      ☰ 메뉴
                     </button>
-                    <button onClick={() => editInGenerator(a)} className="btn text-xs">
-                      수정
-                    </button>
-                    <button onClick={() => remove(a)} className="btn text-xs">삭제</button>
+                    {menuOpenId === a.id && (
+                      <div
+                        role="menu"
+                        className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-md border-2 border-ink bg-paper text-xs shadow-pixel"
+                      >
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            togglePublic(a);
+                            setMenuOpenId(null);
+                          }}
+                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                        >
+                          {a.is_public ? "비공개로" : "갤러리 공개"}
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuOpenId(null);
+                            router.push(`/edit/${a.id}`);
+                          }}
+                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                        >
+                          ✏️ 수정
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuOpenId(null);
+                            regenerate(a);
+                          }}
+                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                        >
+                          🔄 재생성
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuOpenId(null);
+                            remove(a);
+                          }}
+                          className="block w-full px-3 py-2 text-left text-accent hover:bg-accent/10"
+                        >
+                          🗑 삭제
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </article>
               ))}

@@ -43,6 +43,7 @@ export async function GET(_req: NextRequest, { params }: RouteCtx) {
     pixel_data: decodePixels(row.pixelData),
     is_public: row.isPublic,
     token_cost: row.tokenCost,
+    edited_by_human: (row as { editedByHuman?: boolean }).editedByHuman ?? false,
     status: row.status,
     failure_reason: row.failureReason,
     created_at: row.createdAt.toISOString(),

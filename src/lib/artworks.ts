@@ -9,6 +9,7 @@ export interface Artwork {
   pixel_data: string[][];
   is_public: boolean;
   token_cost: number;
+  edited_by_human: boolean;
   created_at: string;
 }
 
@@ -53,6 +54,7 @@ interface DbArtwork {
   pixelData: string;
   isPublic: boolean;
   tokenCost: number;
+  editedByHuman?: boolean;
   createdAt: Date;
 }
 
@@ -66,6 +68,7 @@ function toApi(a: DbArtwork): Artwork {
     pixel_data: decodePixels(a.pixelData),
     is_public: a.isPublic,
     token_cost: a.tokenCost,
+    edited_by_human: a.editedByHuman ?? false,
     created_at: a.createdAt.toISOString()
   };
 }

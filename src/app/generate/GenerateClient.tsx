@@ -60,6 +60,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   const [size, setSize] = useState<Size>(16);
   const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
   const [useSearch, setUseSearch] = useState(false);
+  const [basePixels, setBasePixels] = useState<string[][] | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerateResponse | null>(null);
@@ -133,10 +134,15 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         prompt?: string;
         size?: number;
         pixels?: string[][];
+        mode?: string;
       };
       if (typeof data.prompt === "string") setPrompt(data.prompt);
       if (data.size === 16 || data.size === 32) setSize(data.size);
-      if (Array.isArray(data.pixels) && data.pixels.length > 0) {
+      // 재생성: 픽셀 벡터를 그대로 베이스로 전달(PNG 변환 안 함).
+      if (data.mode === "regenerate" && Array.isArray(data.pixels) && data.pixels.length > 0) {
+        setBasePixels(data.pixels);
+      } else if (Array.isArray(data.pixels) && data.pixels.length > 0) {
+        // 구버전 호환: PNG 참조 이미지로.
         const url = pixelsToDataUrl(data.pixels, data.size === 32 ? 32 : 16);
         if (url) setReferenceImage(url);
       }
@@ -262,7 +268,9 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
       provider,
       referenceImage: referenceImage ?? undefined,
       // 웹 검색은 Claude + 참조 이미지 없을 때만 의미가 있음.
-      webSearch: provider === "claude" && !referenceImage ? useSearch : false
+      webSearch: provider === "claude" && !referenceImage ? useSearch : false,
+      // 재생성: 기존 그림 벡터를 AI에 기본 주입.
+      basePixels: basePixels ?? undefined
     };
 
     void fetch("/api/generate", {
@@ -319,6 +327,22 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
       <section className="card space-y-4">
+        {basePixels && (
+          <div className="flex items-start justify-between gap-2 rounded-md border-2 border-ink bg-amber-100 px-3 py-2 text-xs">
+            <p>
+              🔄 <span className="font-bold">재생성 모드</span> — 기존 그림을 기반으로
+              변형합니다. <span className="font-semibold">바꿀 부분</span>을 프롬프트에 적어주세요.
+            </p>
+            <button
+              onClick={() => setBasePixels(null)}
+              className="shrink-0 font-bold hover:text-accent"
+              aria-label="재생성 모드 해제"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <div>
           <label className="text-sm font-bold">프롬프트</label>
           <textarea

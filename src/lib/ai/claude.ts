@@ -20,11 +20,12 @@ export async function generateWithClaude(
   size: 16 | 32,
   referenceImage?: string,
   userId?: string | null,
-  useSearch = false
+  useSearch = false,
+  basePixels?: string[][]
 ): Promise<Pixels> {
   // 참조 이미지가 없을 때만 웹 조사로 시각 정보를 보강 (이미지가 있으면 그게 우선 참조).
   const research = referenceImage ? null : await researchSubject(prompt, useSearch);
-  const text = claudeUserPrompt(prompt, size, Boolean(referenceImage), research ?? undefined);
+  const text = claudeUserPrompt(prompt, size, Boolean(referenceImage), research ?? undefined, basePixels);
   const content = referenceImage
     ? (() => {
         const { mediaType, base64 } = parseDataUrl(referenceImage);

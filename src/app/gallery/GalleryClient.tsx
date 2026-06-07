@@ -65,11 +65,11 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {items.map((a) => (
           <article key={a.id} className="card">
-            <div className="relative">
+            <div className="group relative">
               <Link href={`/gallery/${a.id}`} className="block">
                 <PixelPreview pixels={a.pixel_data} size={a.size} />
               </Link>
-              <div className="absolute right-1 top-1">
+              <div className="absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                 <WishlistStar
                   artworkId={a.id}
                   initialFolderId={
@@ -80,7 +80,14 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
             </div>
             <Link href={`/gallery/${a.id}`} className="block">
               <p className="mt-2 line-clamp-2 text-xs text-gray-700">{a.prompt}</p>
-              <p className="mt-0.5 text-[10px] text-gray-500">{a.size}×{a.size}</p>
+              <p className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-500">
+                <span>{a.size}×{a.size}</span>
+                {a.edited_by_human && (
+                  <span className="rounded-sm border border-ink bg-amber-200 px-1 font-bold text-ink">
+                    ✏️ 사람 수정
+                  </span>
+                )}
+              </p>
             </Link>
           </article>
         ))}

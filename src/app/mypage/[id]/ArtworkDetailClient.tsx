@@ -17,6 +17,7 @@ interface ArtworkDetail {
   pixel_data: string[][];
   is_public: boolean;
   token_cost: number;
+  edited_by_human: boolean;
   status: string;
   failure_reason: string | null;
   created_at: string;
@@ -28,6 +29,7 @@ interface Props {
 }
 
 function providerLabel(id: string): string {
+  if (id === "human") return "✏️ 사람 제작";
   const p = PROVIDERS.find((x) => x.id === id);
   return p ? `${p.emoji} ${p.label}` : id;
 }
@@ -128,17 +130,25 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
     }
   };
 
-  const editInGenerator = () => {
+  // 재생성: 기존 그림의 벡터를 AI에 기본 주입하고, 생성기에서 바꿀 부분을 적게 한다.
+  const regenerate = () => {
     if (!artwork) return;
     sessionStorage.setItem(
       EDIT_STORAGE_KEY,
       JSON.stringify({
         prompt: artwork.prompt,
         size: artwork.size,
-        pixels: artwork.pixel_data
+        pixels: artwork.pixel_data,
+        mode: "regenerate"
       })
     );
     router.push("/generate");
+  };
+
+  // 수정: 사람이 직접 픽셀을 편집하는 에디터로 이동.
+  const editPixels = () => {
+    if (!artwork) return;
+    router.push(`/edit/${artwork.id}`);
   };
 
   const download = (scale: number) => {
@@ -190,6 +200,11 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
         <section className="card space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
+              {artwork.edited_by_human && (
+                <span className="mb-1 inline-block rounded-sm border-2 border-ink bg-amber-200 px-2 py-0.5 text-[11px] font-bold">
+                  ✏️ 사람 수정
+                </span>
+              )}
               <p className="text-xs uppercase text-gray-500">프롬프트</p>
               <p className="mt-1 whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed">
                 {artwork.prompt}
@@ -240,8 +255,11 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
               <button onClick={togglePublic} disabled={busy} className="btn">
                 {artwork.is_public ? "비공개로 전환" : "갤러리에 공개"}
               </button>
-              <button onClick={editInGenerator} disabled={busy} className="btn">
-                이 작품 기반으로 다시 생성
+              <button onClick={editPixels} disabled={busy} className="btn">
+                ✏️ 수정 (직접 편집)
+              </button>
+              <button onClick={regenerate} disabled={busy} className="btn">
+                🔄 재생성 (AI 변형)
               </button>
               <button onClick={remove} disabled={busy} className="btn text-accent">
                 삭제

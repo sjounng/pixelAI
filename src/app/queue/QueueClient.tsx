@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
-import { PROVIDERS, Provider } from "@/lib/ai";
+import { PROVIDERS } from "@/lib/ai";
 
 type Status = "pending" | "completed" | "failed";
 
@@ -11,7 +11,7 @@ interface QueueItem {
   id: string;
   prompt: string;
   size: number;
-  provider: Provider;
+  provider: string;
   status: Status;
   pixels: string[][] | null;
   failureReason: string | null;
@@ -23,7 +23,8 @@ interface QueueItem {
 const POLL_INTERVAL_MS = 2500;
 const NOTICE_KEY = "pixelai:queue-notice";
 
-function providerMeta(id: Provider) {
+function providerMeta(id: string) {
+  if (id === "human") return { label: "✏️ 사람 제작", emoji: "" };
   return PROVIDERS.find((p) => p.id === id) ?? { label: id, emoji: "" };
 }
 

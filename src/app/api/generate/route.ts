@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     provider?: string;
     referenceImage?: string;
     webSearch?: boolean;
+    basePixels?: unknown;
   };
   try {
     body = await req.json();
@@ -45,6 +46,13 @@ export async function POST(req: NextRequest) {
   const provider: Provider = isProvider(body.provider) ? body.provider : "claude";
   const referenceImage = body.referenceImage?.trim() || undefined;
   const useSearch = body.webSearch === true;
+  // 재생성용 베이스 픽셀(기존 그림 벡터). 형태가 어긋나면 무시.
+  const basePixels =
+    Array.isArray(body.basePixels) &&
+    body.basePixels.length > 0 &&
+    body.basePixels.every((row) => Array.isArray(row))
+      ? (body.basePixels as string[][])
+      : undefined;
 
   if (!prompt) {
     return NextResponse.json({ error: "prompt_required" }, { status: 400 });
@@ -137,7 +145,7 @@ export async function POST(req: NextRequest) {
   // row survives and the reaper handles it on the user's next history fetch.
   let pixels: string[][];
   try {
-    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage, userId, useSearch);
+    pixels = await generatePixelArt(provider, prompt, size as 16 | 32, referenceImage, userId, useSearch, basePixels);
   } catch (e) {
     const reason = (e as Error).message;
     await prisma.$transaction(async (tx) => {

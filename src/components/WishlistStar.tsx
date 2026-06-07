@@ -155,9 +155,14 @@ export default function WishlistStar({ artworkId, initialFolderId, className }: 
             ? `위시 폴더: ${currentFolderName ?? "기본"}`
             : "위시에 추가"
         }
+        style={{
+          // 블러 없는 1px 검정 외곽선 — 픽셀/레트로 테두리 톤과 통일.
+          textShadow:
+            "1px 1px 0 #1a1a1a, -1px 1px 0 #1a1a1a, 1px -1px 0 #1a1a1a, -1px -1px 0 #1a1a1a"
+        }}
         className={
-          "rounded-full border-2 border-ink px-1.5 text-sm leading-none shadow-pixel transition-colors " +
-          (active ? "bg-amber-300 text-ink" : "bg-paper text-gray-400 hover:text-ink") +
+          "text-lg leading-none transition-transform hover:scale-110 " +
+          (active ? "text-amber-400" : "text-paper hover:text-amber-200") +
           (className ? " " + className : "")
         }
       >

@@ -16,9 +16,10 @@ export async function generateWithOpenAI(
   prompt: string,
   size: 16 | 32,
   referenceImage?: string,
-  userId?: string | null
+  userId?: string | null,
+  basePixels?: string[][]
 ): Promise<Pixels> {
-  const text = openaiUserPrompt(prompt, size, Boolean(referenceImage));
+  const text = openaiUserPrompt(prompt, size, Boolean(referenceImage), basePixels);
   const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = referenceImage
     ? [
         { type: "image_url", image_url: { url: referenceImage } },

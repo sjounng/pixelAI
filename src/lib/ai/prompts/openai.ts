@@ -64,7 +64,14 @@ The outline forms one continuous, closed contour around each region — never a 
 
 Then emit ONLY the final JSON.`;
 
-export function openaiUserPrompt(prompt: string, size: number, hasReference = false): string {
+import { basePixelsBlock } from "./shared";
+
+export function openaiUserPrompt(
+  prompt: string,
+  size: number,
+  hasReference = false,
+  basePixels?: string[][]
+): string {
   const sizeHint =
     size === 16
       ? "16×16 canvas. Classic pixel art resolution."
@@ -72,7 +79,7 @@ export function openaiUserPrompt(prompt: string, size: number, hasReference = fa
   const refHint = hasReference
     ? "\n\nA REFERENCE IMAGE is attached. Use it as the primary reference for subject shape, parts, and colors. Apply the pixel-art rendering rules above."
     : "";
-  return `Subject: ${prompt}${refHint}
+  return `Subject: ${prompt}${refHint}${basePixelsBlock(basePixels)}
 
 Canvas size: ${size}x${size}
 ${sizeHint}

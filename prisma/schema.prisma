@@ -77,6 +77,7 @@ model Artwork {
   failureReason String?
   isPublic      Boolean  @default(false)
   tokenCost     Int      @default(10)
+  editedByHuman Boolean  @default(false) // 사람이 픽셀을 직접 수정해 저장한 작품
   createdAt     DateTime @default(now())
 
   wishlistedBy Wishlist[]

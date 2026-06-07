@@ -23,6 +23,7 @@ interface Props {
 }
 
 function providerLabel(id: string): string {
+  if (id === "human") return "✏️ 사람 제작";
   const p = PROVIDERS.find((x) => x.id === id);
   return p ? `${p.emoji} ${p.label}` : id;
 }

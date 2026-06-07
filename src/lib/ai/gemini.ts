@@ -16,9 +16,10 @@ export async function generateWithGemini(
   prompt: string,
   size: 16 | 32,
   referenceImage?: string,
-  userId?: string | null
+  userId?: string | null,
+  basePixels?: string[][]
 ): Promise<Pixels> {
-  const text = geminiUserPrompt(prompt, size, Boolean(referenceImage));
+  const text = geminiUserPrompt(prompt, size, Boolean(referenceImage), basePixels);
   const contents = referenceImage
     ? (() => {
         const { mediaType, base64 } = parseDataUrl(referenceImage);
