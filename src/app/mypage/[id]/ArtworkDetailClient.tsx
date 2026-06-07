@@ -5,6 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import {
+  IconPublic,
+  IconPrivate,
+  IconEdit,
+  IconRegenerate,
+  IconDelete,
+  IconCopy,
+  IconDownload
+} from "@/components/icons";
 import { PROVIDERS } from "@/lib/ai";
 
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
@@ -29,7 +38,7 @@ interface Props {
 }
 
 function providerLabel(id: string): string {
-  if (id === "human") return "✏️ 사람 제작";
+  if (id === "human") return "사람 제작";
   const p = PROVIDERS.find((x) => x.id === id);
   return p ? `${p.emoji} ${p.label}` : id;
 }
@@ -201,8 +210,8 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
           <div className="flex items-start justify-between gap-3">
             <div>
               {artwork.edited_by_human && (
-                <span className="mb-1 inline-block rounded-sm border-2 border-ink bg-amber-200 px-2 py-0.5 text-[11px] font-bold">
-                  ✏️ 사람 수정
+                <span className="mb-1 inline-flex items-center gap-1 rounded-sm border-2 border-ink bg-amber-200 px-2 py-0.5 text-[11px] font-bold">
+                  <IconEdit /> 사람 수정
                 </span>
               )}
               <p className="text-xs uppercase text-gray-500">프롬프트</p>
@@ -216,7 +225,9 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
             />
           </div>
 
-          <button onClick={copyPrompt} className="btn text-xs">프롬프트 복사</button>
+          <button onClick={copyPrompt} className="btn inline-flex items-center gap-1 text-xs">
+            <IconCopy /> 프롬프트 복사
+          </button>
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t-2 border-dashed border-ink pt-4 text-sm">
             <dt className="text-gray-500">AI 모델</dt>
@@ -240,11 +251,11 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
           <div className="space-y-2 border-t-2 border-dashed border-ink pt-4">
             <p className="text-xs uppercase text-gray-500">다운로드</p>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => download(1)} className="btn-primary">
-                원본 {artwork.size}×{artwork.size}
+              <button onClick={() => download(1)} className="btn-primary inline-flex items-center gap-1">
+                <IconDownload /> 원본 {artwork.size}×{artwork.size}
               </button>
-              <button onClick={() => download(16)} className="btn-primary">
-                확대 {artwork.size * 16}×{artwork.size * 16}
+              <button onClick={() => download(16)} className="btn-primary inline-flex items-center gap-1">
+                <IconDownload /> 확대 {artwork.size * 16}×{artwork.size * 16}
               </button>
             </div>
           </div>
@@ -252,17 +263,18 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
           <div className="space-y-2 border-t-2 border-dashed border-ink pt-4">
             <p className="text-xs uppercase text-gray-500">작품 관리</p>
             <div className="flex flex-wrap gap-2">
-              <button onClick={togglePublic} disabled={busy} className="btn">
+              <button onClick={togglePublic} disabled={busy} className="btn inline-flex items-center gap-1">
+                {artwork.is_public ? <IconPrivate /> : <IconPublic />}
                 {artwork.is_public ? "비공개로 전환" : "갤러리에 공개"}
               </button>
-              <button onClick={editPixels} disabled={busy} className="btn">
-                ✏️ 수정 (직접 편집)
+              <button onClick={editPixels} disabled={busy} className="btn inline-flex items-center gap-1">
+                <IconEdit /> 수정 (직접 편집)
               </button>
-              <button onClick={regenerate} disabled={busy} className="btn">
-                🔄 재생성 (AI 변형)
+              <button onClick={regenerate} disabled={busy} className="btn inline-flex items-center gap-1">
+                <IconRegenerate /> 재생성 (AI 변형)
               </button>
-              <button onClick={remove} disabled={busy} className="btn text-accent">
-                삭제
+              <button onClick={remove} disabled={busy} className="btn inline-flex items-center gap-1 text-accent">
+                <IconDelete /> 삭제
               </button>
             </div>
           </div>

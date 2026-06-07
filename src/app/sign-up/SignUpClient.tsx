@@ -116,7 +116,7 @@ export default function SignUpClient({ googleEnabled }: Props) {
           </div>
 
           {error && (
-            <p className="text-xs text-accent">⚠ {error}</p>
+            <p className="text-xs text-accent">{error}</p>
           )}
 
           <button

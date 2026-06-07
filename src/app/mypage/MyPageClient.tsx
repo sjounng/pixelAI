@@ -5,6 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import {
+  IconMenu,
+  IconPublic,
+  IconPrivate,
+  IconEdit,
+  IconRegenerate,
+  IconDelete,
+  IconCharge
+} from "@/components/icons";
 import type { Artwork } from "@/lib/artworks";
 
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
@@ -163,7 +172,9 @@ export default function MyPageClient() {
           <p className="mt-1 text-4xl font-extrabold tabular-nums">
             ◆ {balance ?? "—"}
           </p>
-          <a href="/shop" className="btn-accent mt-3 inline-flex">충전하기</a>
+          <a href="/shop" className="btn-accent mt-3 inline-flex items-center gap-1">
+            <IconCharge /> 충전하기
+          </a>
         </div>
         <div className="card">
           <p className="text-xs uppercase text-gray-500">최근 활동</p>
@@ -216,7 +227,7 @@ export default function MyPageClient() {
                   <div className="mt-2 flex items-center justify-between text-[10px]">
                     <span className={a.is_public ? "text-emerald-600" : "text-gray-400"}>
                       {a.is_public ? "공개" : "비공개"}
-                      {a.edited_by_human ? " · ✏️사람" : ""}
+                      {a.edited_by_human ? " · 사람 수정" : ""}
                     </span>
                     <span className="text-gray-400">{a.size}×{a.size}</span>
                   </div>
@@ -225,9 +236,9 @@ export default function MyPageClient() {
                       onClick={() => setMenuOpenId(menuOpenId === a.id ? null : a.id)}
                       aria-haspopup="menu"
                       aria-expanded={menuOpenId === a.id}
-                      className="btn w-full text-xs"
+                      className="btn inline-flex w-full items-center justify-center gap-1 text-xs"
                     >
-                      ☰ 메뉴
+                      <IconMenu /> 메뉴
                     </button>
                     {menuOpenId === a.id && (
                       <div
@@ -240,8 +251,9 @@ export default function MyPageClient() {
                             togglePublic(a);
                             setMenuOpenId(null);
                           }}
-                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
                         >
+                          {a.is_public ? <IconPrivate /> : <IconPublic />}
                           {a.is_public ? "비공개로" : "갤러리 공개"}
                         </button>
                         <button
@@ -250,9 +262,9 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             router.push(`/edit/${a.id}`);
                           }}
-                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
                         >
-                          ✏️ 수정
+                          <IconEdit /> 수정
                         </button>
                         <button
                           role="menuitem"
@@ -260,9 +272,9 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             regenerate(a);
                           }}
-                          className="block w-full px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
                         >
-                          🔄 재생성
+                          <IconRegenerate /> 재생성
                         </button>
                         <button
                           role="menuitem"
@@ -270,9 +282,9 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             remove(a);
                           }}
-                          className="block w-full px-3 py-2 text-left text-accent hover:bg-accent/10"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-accent hover:bg-accent/10"
                         >
-                          🗑 삭제
+                          <IconDelete /> 삭제
                         </button>
                       </div>
                     )}

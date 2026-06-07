@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { IconCopy, IconDownload } from "@/components/icons";
 import { PROVIDERS } from "@/lib/ai";
 
 interface ArtworkDetail {
@@ -23,7 +24,7 @@ interface Props {
 }
 
 function providerLabel(id: string): string {
-  if (id === "human") return "✏️ 사람 제작";
+  if (id === "human") return "사람 제작";
   const p = PROVIDERS.find((x) => x.id === id);
   return p ? `${p.emoji} ${p.label}` : id;
 }
@@ -152,7 +153,9 @@ export default function GalleryDetailClient({ artworkId }: Props) {
             />
           </div>
 
-          <button onClick={copyPrompt} className="btn text-xs">프롬프트 복사</button>
+          <button onClick={copyPrompt} className="btn inline-flex items-center gap-1 text-xs">
+            <IconCopy /> 프롬프트 복사
+          </button>
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t-2 border-dashed border-ink pt-4 text-sm">
             {artwork.author_name && (
@@ -178,11 +181,11 @@ export default function GalleryDetailClient({ artworkId }: Props) {
           <div className="space-y-2 border-t-2 border-dashed border-ink pt-4">
             <p className="text-xs uppercase text-gray-500">다운로드</p>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => download(1)} className="btn-primary">
-                원본 {artwork.size}×{artwork.size}
+              <button onClick={() => download(1)} className="btn-primary inline-flex items-center gap-1">
+                <IconDownload /> 원본 {artwork.size}×{artwork.size}
               </button>
-              <button onClick={() => download(16)} className="btn-primary">
-                확대 {artwork.size * 16}×{artwork.size * 16}
+              <button onClick={() => download(16)} className="btn-primary inline-flex items-center gap-1">
+                <IconDownload /> 확대 {artwork.size * 16}×{artwork.size * 16}
               </button>
             </div>
           </div>

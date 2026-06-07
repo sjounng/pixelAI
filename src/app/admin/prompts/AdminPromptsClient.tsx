@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconSave, IconDelete } from "@/components/icons";
 import { PROVIDERS, Provider } from "@/lib/ai";
 
 interface PromptItem {
@@ -160,9 +161,9 @@ export default function AdminPromptsClient() {
               <button
                 onClick={() => save(it.provider)}
                 disabled={st.saving || !dirty || !st.draft.trim()}
-                className="btn-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-accent inline-flex items-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {st.saving ? "저장 중…" : "저장"}
+                <IconSave /> {st.saving ? "저장 중…" : "저장"}
               </button>
               <button
                 onClick={() => fillFromDefault(it.provider)}
@@ -174,9 +175,9 @@ export default function AdminPromptsClient() {
               <button
                 onClick={() => resetToDefault(it.provider)}
                 disabled={st.saving || !isOverridden}
-                className="btn text-accent disabled:opacity-30"
+                className="btn inline-flex items-center gap-1 text-accent disabled:opacity-30"
               >
-                오버라이드 삭제
+                <IconDelete /> 오버라이드 삭제
               </button>
               {st.status && <span className="text-xs text-gray-600">{st.status}</span>}
               <span className="ml-auto text-xs text-gray-400">

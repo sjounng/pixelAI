@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IconSave, IconEraser, IconPen, IconCheck } from "@/components/icons";
+import ColorPicker from "@/components/ColorPicker";
 
 interface Props {
   artworkId: string;
@@ -191,30 +193,56 @@ export default function EditClient({ artworkId }: Props) {
                 />
               ))}
             </div>
-            <div className="mt-2 flex items-center gap-2">
-              <input
-                type="color"
+            <div className="mt-2">
+              <ColorPicker
                 value={/^#[0-9a-f]{6}$/i.test(color) ? color : "#000000"}
-                onChange={(e) => {
-                  setColor(e.target.value);
+                onChange={(c) => {
+                  setColor(c);
                   setErasing(false);
                 }}
-                className="h-8 w-12 cursor-pointer rounded border-2 border-ink"
-                aria-label="사용자 지정 색"
               />
+            </div>
+            <div className="mt-2 flex gap-2">
               <button
-                onClick={() => setErasing((v) => !v)}
-                className={"btn text-xs " + (erasing ? "bg-ink text-paper" : "")}
+                onClick={() => setErasing(false)}
+                aria-pressed={!erasing}
+                className={
+                  "inline-flex flex-1 items-center justify-center gap-1 rounded-md border-2 border-ink px-3 py-2 text-xs font-semibold shadow-pixel " +
+                  (!erasing
+                    ? "bg-accent text-paper ring-2 ring-ink"
+                    : "bg-paper text-ink opacity-70")
+                }
               >
-                지우개 {erasing ? "ON" : "OFF"}
+                {!erasing && <IconCheck />}
+                <IconPen /> 펜
+              </button>
+              <button
+                onClick={() => setErasing(true)}
+                aria-pressed={erasing}
+                className={
+                  "inline-flex flex-1 items-center justify-center gap-1 rounded-md border-2 border-ink px-3 py-2 text-xs font-semibold shadow-pixel " +
+                  (erasing
+                    ? "bg-accent text-paper ring-2 ring-ink"
+                    : "bg-paper text-ink opacity-70")
+                }
+              >
+                {erasing && <IconCheck />}
+                <IconEraser /> 지우개
               </button>
             </div>
+            <p className="mt-1 text-[11px] text-gray-500">
+              현재 도구: <span className="font-bold">{erasing ? "지우개" : "펜"}</span>
+            </p>
           </div>
 
           {error && <p className="text-sm text-accent">{error}</p>}
 
-          <button onClick={save} disabled={saving} className="btn-accent w-full disabled:opacity-50">
-            {saving ? "저장 중…" : "새 작품으로 저장"}
+          <button
+            onClick={save}
+            disabled={saving}
+            className="btn-accent inline-flex w-full items-center justify-center gap-1 disabled:opacity-50"
+          >
+            <IconSave /> {saving ? "저장 중…" : "새 작품으로 저장"}
           </button>
           <p className="text-xs text-gray-500">
             저장하면 토큰 차감 없이 내 작품에 추가됩니다.

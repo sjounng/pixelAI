@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { IconCharge } from "@/components/icons";
 import type { TokenPackage } from "@/lib/stripe";
 
 interface Props {
@@ -82,16 +83,16 @@ export default function ShopClient({ packages }: Props) {
             <button
               onClick={() => buy(p.id)}
               disabled={loadingId === p.id}
-              className="btn-primary mt-3 disabled:opacity-50"
+              className="btn-primary mt-3 inline-flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingId === p.id ? "준비 중…" : "구매하기"}
+              <IconCharge /> {loadingId === p.id ? "준비 중…" : "구매하기"}
             </button>
           </div>
         ))}
       </div>
 
       {error && (
-        <p className="text-sm text-accent">⚠ {error}</p>
+        <p className="text-sm text-accent">{error}</p>
       )}
 
       <footer className="card text-xs text-gray-600">

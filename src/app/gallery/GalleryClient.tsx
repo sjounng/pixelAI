@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { IconEdit } from "@/components/icons";
 import type { Artwork } from "@/lib/artworks";
 
 interface Props {
@@ -83,8 +84,8 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
               <p className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-500">
                 <span>{a.size}×{a.size}</span>
                 {a.edited_by_human && (
-                  <span className="rounded-sm border border-ink bg-amber-200 px-1 font-bold text-ink">
-                    ✏️ 사람 수정
+                  <span className="inline-flex items-center gap-0.5 rounded-sm border border-ink bg-amber-200 px-1 font-bold text-ink">
+                    <IconEdit /> 사람 수정
                   </span>
                 )}
               </p>

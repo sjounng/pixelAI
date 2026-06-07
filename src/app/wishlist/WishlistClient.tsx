@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PixelPreview from "@/components/PixelPreview";
+import { IconDownload, IconDelete, IconSave, IconClose, IconCheck } from "@/components/icons";
 import type { WishlistItem, WishlistFolder } from "@/lib/wishlist";
 
 type SizeTab = 16 | 32;
@@ -255,7 +256,7 @@ export default function WishlistClient() {
   if (items.length === 0) {
     return (
       <div className="card text-center text-sm text-gray-600">
-        위시리스트가 비어 있습니다. 갤러리나 마이페이지에서 ⭐를 눌러 작품을 추가해보세요.
+        위시리스트가 비어 있습니다. 갤러리나 마이페이지에서 별을 눌러 작품을 추가해보세요.
       </div>
     );
   }
@@ -287,9 +288,9 @@ export default function WishlistClient() {
             <button
               onClick={buildSprite}
               disabled={selectedItems.length === 0 || building}
-              className="btn-accent disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-accent inline-flex items-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {building ? "생성 중…" : "스프라이트 시트 다운로드"}
+              <IconDownload /> {building ? "생성 중…" : "스프라이트 시트 다운로드"}
             </button>
           </div>
         </div>
@@ -352,10 +353,11 @@ export default function WishlistClient() {
                       e.stopPropagation();
                       deleteFolder(f);
                     }}
-                    className="btn px-1.5 py-0.5 text-[10px]"
+                    className="btn inline-flex items-center px-1.5 py-0.5 text-[10px]"
                     title="삭제"
+                    aria-label="폴더 삭제"
                   >
-                    ✕
+                    <IconClose />
                   </button>
                 </div>
               </div>
@@ -414,7 +416,7 @@ export default function WishlistClient() {
                           (isSelected ? "bg-accent text-paper" : "bg-paper")
                         }
                       >
-                        {isSelected ? "✓" : "○"}
+                        {isSelected ? <IconCheck /> : null}
                       </span>
                     </div>
                     <p className="mt-2 line-clamp-2 text-xs text-gray-700">{a.prompt}</p>
@@ -442,8 +444,11 @@ export default function WishlistClient() {
                           </option>
                         ))}
                       </select>
-                      <button onClick={() => remove(a)} className="btn px-2 py-1 text-[11px]">
-                        제거
+                      <button
+                        onClick={() => remove(a)}
+                        className="btn inline-flex items-center gap-1 px-2 py-1 text-[11px]"
+                      >
+                        <IconDelete /> 제거
                       </button>
                     </div>
                   </article>
@@ -499,9 +504,9 @@ export default function WishlistClient() {
                   !renameDraft.trim() ||
                   renameDraft.trim() === renameTarget.name
                 }
-                className="btn-accent text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-accent inline-flex items-center gap-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {renameSaving ? "저장 중…" : "저장"}
+                <IconSave /> {renameSaving ? "저장 중…" : "저장"}
               </button>
             </div>
           </div>

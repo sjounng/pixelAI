@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
+import {
+  IconGenerate,
+  IconPublic,
+  IconPrivate,
+  IconDownload,
+  IconClose,
+  IconClock
+} from "@/components/icons";
 import { PROVIDERS } from "@/lib/ai";
 
 type Status = "pending" | "completed" | "failed";
@@ -24,7 +32,7 @@ const POLL_INTERVAL_MS = 2500;
 const NOTICE_KEY = "pixelai:queue-notice";
 
 function providerMeta(id: string) {
-  if (id === "human") return { label: "✏️ 사람 제작", emoji: "" };
+  if (id === "human") return { label: "사람 제작", emoji: "" };
   return PROVIDERS.find((p) => p.id === id) ?? { label: id, emoji: "" };
 }
 
@@ -167,19 +175,21 @@ export default function QueueClient() {
               : "제작 중인 작품이 없습니다."}
           </p>
         </div>
-        <Link href="/generate" className="btn-accent">+ 새 생성</Link>
+        <Link href="/generate" className="btn-accent inline-flex items-center gap-1">
+          <IconGenerate /> 새 생성
+        </Link>
       </div>
 
       <p className="rounded-md border-2 border-dashed border-ink bg-paper px-3 py-2 text-xs text-gray-600">
-        ℹ️ 최근 60분 내 작업이 제작 중·완료·실패 상태로 표시됩니다. 완료된 작품은 이후
+        최근 60분 내 작업이 제작 중·완료·실패 상태로 표시됩니다. 완료된 작품은 이후
         마이페이지에서 계속 확인할 수 있습니다.
       </p>
 
       {notice && (
         <div className="flex items-start justify-between gap-3 rounded-md border-2 border-accent bg-accent/10 p-3 text-sm">
           <p>{notice}</p>
-          <button onClick={() => setNotice(null)} className="font-bold" aria-label="닫기">
-            ✕
+          <button onClick={() => setNotice(null)} aria-label="닫기">
+            <IconClose />
           </button>
         </div>
       )}
@@ -223,9 +233,9 @@ export default function QueueClient() {
                       ) : (
                         <div className="pixel-grid flex h-12 w-12 items-center justify-center rounded-sm border-2 border-ink bg-paper">
                           {item.status === "failed" ? (
-                            <span className="text-accent">✕</span>
+                            <IconClose className="text-accent" />
                           ) : (
-                            <span className="animate-pulse">▦</span>
+                            <IconClock className="animate-pulse text-gray-500" />
                           )}
                         </div>
                       )}
@@ -261,12 +271,16 @@ export default function QueueClient() {
                           <button
                             onClick={() => togglePublic(item)}
                             disabled={busyId === item.id}
-                            className="btn text-xs"
+                            className="btn inline-flex items-center gap-1 text-xs"
                           >
+                            {item.is_public ? <IconPrivate /> : <IconPublic />}
                             {item.is_public ? "비공개" : "공개"}
                           </button>
-                          <button onClick={() => download(item)} className="btn-primary text-xs">
-                            PNG
+                          <button
+                            onClick={() => download(item)}
+                            className="btn-primary inline-flex items-center gap-1 text-xs"
+                          >
+                            <IconDownload /> PNG
                           </button>
                         </div>
                       ) : (

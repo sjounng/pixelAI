@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IconCheck } from "@/components/icons";
 
 interface Folder {
   id: string;
@@ -188,7 +189,7 @@ export default function WishlistStar({ artworkId, initialFolderId, className }: 
                 }
               >
                 <span>기본 (폴더 없음)</span>
-                {folderId === null && <span>✓</span>}
+                {folderId === null && <IconCheck />}
               </button>
             </li>
             {folders.map((f) => (
@@ -202,7 +203,7 @@ export default function WishlistStar({ artworkId, initialFolderId, className }: 
                   }
                 >
                   <span className="truncate">{f.name}</span>
-                  {folderId === f.id && <span>✓</span>}
+                  {folderId === f.id && <IconCheck />}
                 </button>
               </li>
             ))}

@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PROVIDERS, Provider } from "@/lib/ai";
+import {
+  IconGenerate,
+  IconSearch,
+  IconRegenerate,
+  IconPublic,
+  IconPrivate,
+  IconDownload,
+  IconClose
+} from "@/components/icons";
 
 type Size = 16 | 32;
 
@@ -343,16 +352,19 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
       <section className="card space-y-4">
         {basePixels && (
           <div className="flex items-start justify-between gap-2 rounded-md border-2 border-ink bg-amber-100 px-3 py-2 text-xs">
-            <p>
-              🔄 <span className="font-bold">재생성 모드</span> — 기존 그림을 기반으로
-              변형합니다. <span className="font-semibold">바꿀 부분</span>을 프롬프트에 적어주세요.
+            <p className="flex items-center gap-1">
+              <IconRegenerate />
+              <span>
+                <span className="font-bold">재생성 모드</span> — 기존 그림을 기반으로 변형합니다.{" "}
+                <span className="font-semibold">바꿀 부분</span>을 프롬프트에 적어주세요.
+              </span>
             </p>
             <button
               onClick={() => setBasePixels(null)}
-              className="shrink-0 font-bold hover:text-accent"
+              className="shrink-0 hover:text-accent"
               aria-label="재생성 모드 해제"
             >
-              ✕
+              <IconClose />
             </button>
           </div>
         )}
@@ -396,10 +408,10 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               <button
                 type="button"
                 onClick={() => setReferenceImage(null)}
-                className="absolute -right-2 -top-2 rounded-full border-2 border-ink bg-paper px-2 py-0.5 text-xs font-bold shadow-pixel hover:bg-accent hover:text-paper"
+                className="absolute -right-2 -top-2 inline-flex items-center justify-center rounded-full border-2 border-ink bg-paper p-1 text-xs shadow-pixel hover:bg-accent hover:text-paper"
                 aria-label="이미지 제거"
               >
-                ✕
+                <IconClose />
               </button>
             </div>
           ) : (
@@ -446,7 +458,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           </div>
           {available.length === 0 && (
             <p className="mt-1 text-xs text-accent">
-              ⚠ 어떤 AI 키도 설정되지 않았습니다. .env.local 확인.
+              어떤 AI 키도 설정되지 않았습니다. .env.local 확인.
             </p>
           )}
         </div>
@@ -455,7 +467,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           <div>
             <label className="flex items-center justify-between gap-3 rounded-md border-2 border-ink bg-paper px-3 py-2 shadow-pixel">
               <span className="text-sm">
-                <span className="font-bold">🔍 AI 검색</span>
+                <span className="inline-flex items-center gap-1 font-bold"><IconSearch /> AI 검색</span>
                 <span className="ml-1 text-xs text-gray-500">
                   생성 전 웹에서 대상을 조사 (정확도↑·다소 느려짐)
                 </span>
@@ -502,9 +514,9 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         <button
           onClick={handleGenerate}
           disabled={loading || !prompt.trim() || available.length === 0}
-          className="btn-accent w-full disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-accent inline-flex w-full items-center justify-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "생성 중…" : "픽셀 아트 생성"}
+          <IconGenerate /> {loading ? "생성 중…" : "픽셀 아트 생성"}
         </button>
 
         {error && (
@@ -554,11 +566,12 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
                 : `· -${result.token_used} · 잔액 ${result.token_balance}`}
             </p>
             <div className="flex gap-2">
-              <button onClick={togglePublic} disabled={makingPublic} className="btn">
+              <button onClick={togglePublic} disabled={makingPublic} className="btn inline-flex items-center gap-1">
+                {isPublic ? <IconPrivate /> : <IconPublic />}
                 {isPublic ? "비공개로" : "갤러리에 공개"}
               </button>
-              <button onClick={handleDownload} className="btn-primary">
-                PNG 다운로드
+              <button onClick={handleDownload} className="btn-primary inline-flex items-center gap-1">
+                <IconDownload /> PNG 다운로드
               </button>
             </div>
           </div>
@@ -573,7 +586,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               (toast.kind === "error" ? "bg-accent text-paper" : "bg-ink text-paper")
             }
           >
-            <span>{toast.kind === "error" ? "⚠ " : "✅ "}{toast.msg}</span>
+            <span>{toast.msg}</span>
             {toast.kind === "info" && (
               <Link href="/queue" className="underline">
                 대기열 보기
