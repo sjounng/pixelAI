@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PixelPreview from "@/components/PixelPreview";
-import { IconDownload, IconDelete, IconSave, IconClose, IconCheck } from "@/components/icons";
+import { IconDownload, IconDelete, IconSave, IconClose } from "@/components/icons";
 import type { WishlistItem, WishlistFolder } from "@/lib/wishlist";
 
 type SizeTab = 16 | 32;
@@ -403,21 +403,13 @@ export default function WishlistClient() {
                   <article
                     key={a.id}
                     className={
-                      "card cursor-pointer transition-colors " +
-                      (isSelected ? "ring-2 ring-accent" : "")
+                      "card cursor-pointer transition-all " +
+                      (isSelected ? "ring-4 ring-accent" : "hover:ring-2 hover:ring-ink/30")
                     }
                     onClick={() => toggleSelect(a.id)}
                   >
                     <div className="relative">
                       <PixelPreview pixels={a.pixel_data} size={a.size} />
-                      <span
-                        className={
-                          "absolute right-1 top-1 rounded-full border-2 border-ink px-1.5 text-[10px] font-bold shadow-pixel " +
-                          (isSelected ? "bg-accent text-paper" : "bg-paper")
-                        }
-                      >
-                        {isSelected ? <IconCheck /> : null}
-                      </span>
                     </div>
                     <p className="mt-2 line-clamp-2 text-xs text-gray-700">{a.prompt}</p>
                     <div className="mt-2 flex items-center justify-between text-[10px]">
