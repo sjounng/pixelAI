@@ -11,7 +11,7 @@ import {
   IconClose,
   IconClock
 } from "@/components/icons";
-import { PROVIDERS } from "@/lib/ai";
+import ProviderTag from "@/components/ProviderTag";
 
 type Status = "pending" | "completed" | "failed";
 
@@ -30,11 +30,6 @@ interface QueueItem {
 
 const POLL_INTERVAL_MS = 2500;
 const NOTICE_KEY = "pixelai:queue-notice";
-
-function providerMeta(id: string) {
-  if (id === "human") return { label: "사람 제작", emoji: "" };
-  return PROVIDERS.find((p) => p.id === id) ?? { label: id, emoji: "" };
-}
 
 function formatTime(iso: string): string {
   try {
@@ -218,7 +213,6 @@ export default function QueueClient() {
             </thead>
             <tbody>
               {items.map((item) => {
-                const meta = providerMeta(item.provider);
                 return (
                   <tr key={item.id} className="border-b border-ink/20 align-middle">
                     <td className="px-3 py-2">
@@ -257,7 +251,7 @@ export default function QueueClient() {
                       <p className="text-xs text-gray-500">{item.size}×{item.size}</p>
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-xs">
-                      {meta.emoji} {meta.label}
+                      <ProviderTag provider={item.provider} />
                     </td>
                     <td className="whitespace-nowrap px-3 py-2">
                       <StatusBadge status={item.status} reason={item.failureReason} />

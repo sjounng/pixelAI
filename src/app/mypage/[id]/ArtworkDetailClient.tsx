@@ -14,7 +14,7 @@ import {
   IconCopy,
   IconDownload
 } from "@/components/icons";
-import { PROVIDERS } from "@/lib/ai";
+import ProviderTag from "@/components/ProviderTag";
 
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
 
@@ -35,12 +35,6 @@ interface ArtworkDetail {
 
 interface Props {
   artworkId: string;
-}
-
-function providerLabel(id: string): string {
-  if (id === "human") return "사람 제작";
-  const p = PROVIDERS.find((x) => x.id === id);
-  return p ? `${p.emoji} ${p.label}` : id;
 }
 
 function formatDate(iso: string): string {
@@ -231,7 +225,7 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t-2 border-dashed border-ink pt-4 text-sm">
             <dt className="text-gray-500">AI 모델</dt>
-            <dd className="font-semibold">{providerLabel(artwork.provider)}</dd>
+            <dd className="font-semibold"><ProviderTag provider={artwork.provider} /></dd>
 
             <dt className="text-gray-500">해상도</dt>
             <dd className="font-semibold">{artwork.size}×{artwork.size}</dd>

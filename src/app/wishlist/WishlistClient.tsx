@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PixelPreview from "@/components/PixelPreview";
-import { IconDownload, IconDelete, IconSave, IconClose } from "@/components/icons";
+import { IconDownload, IconDelete, IconSave, IconClose, IconEdit } from "@/components/icons";
+import Select from "@/components/Select";
 import type { WishlistItem, WishlistFolder } from "@/lib/wishlist";
 
 type SizeTab = 16 | 32;
@@ -343,10 +344,11 @@ export default function WishlistClient() {
                       e.stopPropagation();
                       openRename(f);
                     }}
-                    className="btn px-1.5 py-0.5 text-[10px]"
+                    className="btn inline-flex items-center px-1.5 py-0.5 text-[10px]"
                     title="이름 변경"
+                    aria-label="폴더 이름 변경"
                   >
-                    ✎
+                    <IconEdit />
                   </button>
                   <button
                     onClick={(e) => {
@@ -422,23 +424,18 @@ export default function WishlistClient() {
                       className="mt-2 flex items-center gap-1"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <select
+                      <Select
+                        className="flex-1"
                         value={a.folder_id ?? ""}
-                        onChange={(e) =>
-                          moveToFolder(a.id, e.target.value === "" ? null : e.target.value)
-                        }
-                        className="input flex-1 px-2 py-1 text-[11px]"
-                      >
-                        <option value="">기본 (없음)</option>
-                        {folders.map((f) => (
-                          <option key={f.id} value={f.id}>
-                            {f.name}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(v) => moveToFolder(a.id, v === "" ? null : v)}
+                        options={[
+                          { value: "", label: "기본 (없음)" },
+                          ...folders.map((f) => ({ value: f.id, label: f.name }))
+                        ]}
+                      />
                       <button
                         onClick={() => remove(a)}
-                        className="btn inline-flex items-center gap-1 px-2 py-1 text-[11px]"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-md border-2 border-ink bg-paper px-2 py-1 text-[11px] shadow-pixel"
                       >
                         <IconDelete /> 제거
                       </button>

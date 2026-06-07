@@ -34,6 +34,15 @@ body {
   @apply rounded-lg border-2 border-ink bg-paper p-4 text-ink shadow-pixel;
 }
 
+/* 모든 버튼에 공통 누름 반응(레트로 프레스): 살짝 눌리며 그림자 제거 */
+button:not(:disabled) {
+  transition: transform 60ms ease, box-shadow 60ms ease, background-color 120ms ease;
+}
+button:not(:disabled):active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
 .input {
   @apply w-full rounded-md border-2 border-ink bg-paper px-3 py-2 text-sm text-ink shadow-pixel placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent2;
 }

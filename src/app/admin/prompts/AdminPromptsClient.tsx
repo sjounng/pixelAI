@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { IconSave, IconDelete } from "@/components/icons";
+import { ProviderDot } from "@/components/ProviderTag";
 import { PROVIDERS, Provider } from "@/lib/ai";
 
 interface PromptItem {
@@ -130,8 +131,8 @@ export default function AdminPromptsClient() {
         return (
           <section key={it.provider} className="card space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-xl font-bold">
-                <span className="mr-1">{meta?.emoji}</span>
+              <h2 className="inline-flex items-center gap-1.5 text-xl font-bold">
+                {meta && <ProviderDot color={meta.color} />}
                 {meta?.label ?? it.provider}
               </h2>
               <div className="text-xs text-gray-500">

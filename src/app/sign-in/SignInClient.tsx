@@ -52,9 +52,12 @@ export default function SignInClient({ googleEnabled }: Props) {
           <>
             <button
               onClick={() => signIn("google", { callbackUrl })}
-              className="btn w-full"
+              className="btn inline-flex w-full items-center justify-center gap-2"
             >
-              <span className="mr-2">🔵</span> Google로 계속하기
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-ink text-[10px] font-bold">
+                G
+              </span>
+              Google로 계속하기
             </button>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <span className="h-px flex-1 bg-gray-300" />

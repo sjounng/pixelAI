@@ -287,7 +287,7 @@ export default function MyPageClient() {
                     {menuOpenId === a.id && (
                       <div
                         role="menu"
-                        className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-md border-2 border-ink bg-paper text-xs shadow-pixel"
+                        className="absolute left-0 right-0 z-20 mt-1 w-full overflow-hidden rounded-md border-2 border-ink bg-paper text-[11px] shadow-pixel"
                       >
                         <button
                           role="menuitem"
@@ -295,7 +295,7 @@ export default function MyPageClient() {
                             togglePublic(a);
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-2 py-1.5 text-left hover:bg-ink/5"
                         >
                           {a.is_public ? <IconPrivate /> : <IconPublic />}
                           {a.is_public ? "비공개로" : "갤러리 공개"}
@@ -306,7 +306,7 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             router.push(`/edit/${a.id}`);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-2 py-1.5 text-left hover:bg-ink/5"
                         >
                           <IconEdit /> 수정
                         </button>
@@ -316,7 +316,7 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             regenerate(a);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-ink/5"
+                          className="flex w-full items-center gap-2 px-2 py-1.5 text-left hover:bg-ink/5"
                         >
                           <IconRegenerate /> 재생성
                         </button>
@@ -326,7 +326,7 @@ export default function MyPageClient() {
                             setMenuOpenId(null);
                             remove(a);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-accent hover:bg-accent/10"
+                          className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-accent hover:bg-accent/10"
                         >
                           <IconDelete /> 삭제
                         </button>

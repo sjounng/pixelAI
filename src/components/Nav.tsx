@@ -4,6 +4,7 @@ import TokenBadge from "@/components/TokenBadge";
 import Logo from "@/components/Logo";
 import QueueNavLink from "@/components/QueueNavLink";
 import QueueWatcher from "@/components/QueueWatcher";
+import { IconSettings } from "@/components/icons";
 import { isAdminEmail } from "@/lib/env";
 
 export default async function Nav() {
@@ -31,10 +32,10 @@ export default async function Nav() {
           {isAdmin && (
             <Link
               href="/admin/prompts"
-              className="rounded-sm border-2 border-ink bg-amber-200 px-2 py-0.5 text-xs font-bold hover:bg-amber-300"
+              className="inline-flex items-center gap-1 rounded-sm border-2 border-ink bg-amber-200 px-2 py-0.5 text-xs font-bold hover:bg-amber-300"
               title="admin 전용 — 프롬프트 편집"
             >
-              ⚙ 프롬프트
+              <IconSettings /> 프롬프트
             </Link>
           )}
         </nav>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
 import { IconCopy, IconDownload } from "@/components/icons";
-import { PROVIDERS } from "@/lib/ai";
+import ProviderTag from "@/components/ProviderTag";
 
 interface ArtworkDetail {
   id: string;
@@ -21,12 +21,6 @@ interface ArtworkDetail {
 
 interface Props {
   artworkId: string;
-}
-
-function providerLabel(id: string): string {
-  if (id === "human") return "사람 제작";
-  const p = PROVIDERS.find((x) => x.id === id);
-  return p ? `${p.emoji} ${p.label}` : id;
 }
 
 function formatDate(iso: string): string {
@@ -166,7 +160,7 @@ export default function GalleryDetailClient({ artworkId }: Props) {
             )}
 
             <dt className="text-gray-500">AI 모델</dt>
-            <dd className="font-semibold">{providerLabel(artwork.provider)}</dd>
+            <dd className="font-semibold"><ProviderTag provider={artwork.provider} /></dd>
 
             <dt className="text-gray-500">해상도</dt>
             <dd className="font-semibold">{artwork.size}×{artwork.size}</dd>

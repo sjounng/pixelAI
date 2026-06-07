@@ -5,10 +5,10 @@ import { generateWithGemini } from "./gemini";
 export type Provider = "claude" | "openai" | "gemini";
 export type Pixels = string[][];
 
-export const PROVIDERS: { id: Provider; label: string; emoji: string }[] = [
-  { id: "claude", label: "Claude", emoji: "🟠" },
-  { id: "openai", label: "GPT",    emoji: "🟢" },
-  { id: "gemini", label: "Gemini", emoji: "🔵" }
+export const PROVIDERS: { id: Provider; label: string; color: string }[] = [
+  { id: "claude", label: "Claude", color: "#d97757" },
+  { id: "openai", label: "GPT",    color: "#10a37f" },
+  { id: "gemini", label: "Gemini", color: "#4285f4" }
 ];
 
 export function isProvider(v: unknown): v is Provider {

@@ -138,6 +138,33 @@ export function IconSearch({ className }: IconProps) {
   );
 }
 
+export function IconImage({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <rect x="3" y="5" width="18" height="14" />
+      <circle cx="8.5" cy="10" r="1.5" />
+      <path d="M21 16l-5-5-7 7" />
+    </Svg>
+  );
+}
+
+export function IconSettings({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+    </Svg>
+  );
+}
+
+export function IconChevronDown({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M6 9l6 6 6-6" />
+    </Svg>
+  );
+}
+
 export function IconClose({ className }: IconProps) {
   return (
     <Svg className={className}>

@@ -10,8 +10,10 @@ import {
   IconPublic,
   IconPrivate,
   IconDownload,
-  IconClose
+  IconClose,
+  IconImage
 } from "@/components/icons";
+import { ProviderDot } from "@/components/ProviderTag";
 
 type Size = 16 | 32;
 
@@ -430,7 +432,9 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
                 (dragActive ? "bg-accent/10" : "bg-paper hover:bg-ink/5")
               }
             >
-              <p className="font-semibold">📎 이미지를 드래그하거나 클릭하여 업로드</p>
+              <p className="inline-flex items-center gap-1 font-semibold">
+                <IconImage /> 이미지를 드래그하거나 클릭하여 업로드
+              </p>
               <p className="mt-1 text-gray-500">PNG / JPEG / WebP / GIF · 최대 5MB</p>
             </div>
           )}
@@ -448,11 +452,11 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
                   disabled={!enabled}
                   title={enabled ? "" : "API 키 미설정"}
                   className={
-                    "rounded-md border-2 border-ink px-3 py-2 text-sm font-semibold shadow-pixel disabled:cursor-not-allowed disabled:opacity-40 " +
+                    "inline-flex items-center justify-center gap-1.5 rounded-md border-2 border-ink px-3 py-2 text-sm font-semibold shadow-pixel disabled:cursor-not-allowed disabled:opacity-40 " +
                     (provider === p.id && enabled ? "bg-ink text-paper" : "bg-paper text-ink")
                   }
                 >
-                  <span className="mr-1">{p.emoji}</span>
+                  <ProviderDot color={p.color} />
                   {p.label}
                 </button>
               );
@@ -534,7 +538,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         )}
 
         <div className="border-t-2 border-dashed border-ink pt-3 text-xs text-gray-600">
-          <p>💡 팁</p>
+          <p className="font-bold">팁</p>
           <ul className="ml-4 list-disc">
             <li>주제를 단순하고 구체적으로 묘사하세요.</li>
             <li>모델마다 화풍이 다릅니다. 여러 번 비교해보세요.</li>
