@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PROVIDERS, Provider } from "@/lib/ai";
 
 type Size = 16 | 32;
@@ -28,6 +29,7 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
 const PENDING_STORAGE_KEY = "pixelai:pending-generation";
+const QUEUE_NOTICE_KEY = "pixelai:queue-notice";
 const PENDING_MAX_AGE_MS = 150_000;
 const POLL_INTERVAL_MS = 2000;
 const NORMAL_PROMPT_LIMIT = 200;
@@ -58,6 +60,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   const [size, setSize] = useState<Size>(16);
   const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
   const [useSearch, setUseSearch] = useState(false);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -246,52 +249,45 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
     }
   };
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || loading) return;
-    setLoading(true);
-    setError(null);
-    setIsPublic(false);
+  // 생성은 백그라운드로 보내고 즉시 대기열로 이동한다. 요청(fetch)은 컴포넌트가
+  // 언마운트돼도 브라우저가 응답까지 유지하므로, 모델을 바꾸거나 페이지를 옮겨도
+  // 진행 중인 생성이 사라지지 않는다. 대기열 페이지가 상태를 폴링해 보여준다.
+  const handleGenerate = () => {
+    const p = prompt.trim();
+    if (!p || loading || available.length === 0) return;
 
-    // 페이지 이탈/새로고침 후 복구를 위해 마커 저장. 응답을 받으면 즉시 제거.
-    const marker = { prompt: prompt.trim(), size, provider, startedAt: Date.now() };
-    localStorage.setItem(PENDING_STORAGE_KEY, JSON.stringify(marker));
+    const body = {
+      prompt: p,
+      size,
+      provider,
+      referenceImage: referenceImage ?? undefined,
+      // 웹 검색은 Claude + 참조 이미지 없을 때만 의미가 있음.
+      webSearch: provider === "claude" && !referenceImage ? useSearch : false
+    };
 
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: marker.prompt,
-          size,
-          provider,
-          referenceImage: referenceImage ?? undefined,
-          // 웹 검색은 Claude + 참조 이미지 없을 때만 의미가 있음.
-          webSearch: provider === "claude" && !referenceImage ? useSearch : false
-        })
-      });
-      const data = await res.json();
-      localStorage.removeItem(PENDING_STORAGE_KEY);
-      if (!res.ok) {
-        if (data.error === "session_invalid") {
-          setError("세션이 만료되었습니다. 로그아웃 후 다시 로그인해 주세요.");
-        } else if (data.error === "insufficient_tokens") {
-          setError(`토큰이 부족합니다. (필요 ${data.cost} · 잔액 ${data.balance})`);
-        } else if (data.error === "provider_not_configured") {
-          setError(`${data.provider} API 키가 설정되지 않았습니다.`);
-        } else {
-          setError(data.detail || data.error || "생성 실패");
+    void fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          // 생성 전 단계 에러(토큰 부족/세션 만료 등)는 대기열에 행이 안 생기므로
+          // 대기열 페이지가 읽어 배너로 보여줄 수 있게 sessionStorage에 남긴다.
+          const data = await res.json().catch(() => ({}));
+          try {
+            sessionStorage.setItem(QUEUE_NOTICE_KEY, JSON.stringify(data));
+          } catch {
+            // 무시
+          }
         }
-        return;
-      }
-      setResult(data);
-      window.dispatchEvent(new Event("tokens:update"));
-    } catch (e) {
-      // fetch가 실패해도 서버에선 진행 중일 수 있음 — 마커는 유지해서
-      // 사용자가 돌아왔을 때 폴링으로 결과를 회수.
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
+        window.dispatchEvent(new Event("tokens:update"));
+      })
+      .catch(() => {
+        // 네트워크 오류여도 서버에선 진행 중일 수 있음 — 대기열 폴링이 회수.
+      });
+
+    router.push("/queue");
   };
 
   const handleDownload = () => {
