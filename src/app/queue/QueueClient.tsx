@@ -28,6 +28,18 @@ function providerMeta(id: string) {
   return PROVIDERS.find((p) => p.id === id) ?? { label: id, emoji: "" };
 }
 
+function formatTime(iso: string): string {
+  try {
+    return new Date(iso).toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  } catch {
+    return iso;
+  }
+}
+
 function pixelsToDataUrl(pixels: string[][], n: number): string {
   const canvas = document.createElement("canvas");
   canvas.width = n;
@@ -181,58 +193,118 @@ export default function QueueClient() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => {
-          const meta = providerMeta(item.provider);
-          return (
-            <div key={item.id} className="card space-y-3">
-              <div className="pixel-grid flex aspect-square w-full items-center justify-center rounded-md border-2 border-ink bg-paper p-2">
-                {item.status === "completed" && item.pixels ? (
-                  <PixelPreview pixels={item.pixels} size={item.size} />
-                ) : item.status === "failed" ? (
-                  <div className="text-center text-xs text-accent">
-                    <p className="text-2xl">✕</p>
-                    <p className="mt-1 font-semibold">생성 실패</p>
-                    <p className="text-gray-500">토큰 환불됨</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-xs text-gray-500">
-                    <p className="animate-pulse text-2xl">▦</p>
-                    <p className="mt-1 font-semibold">제작 중…</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <p className="line-clamp-2 text-sm font-semibold" title={item.prompt}>
-                  {item.prompt}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {meta.emoji} {meta.label} · {item.size}×{item.size}
-                  {item.status === "failed" && item.failureReason
-                    ? ` · ${item.failureReason}`
-                    : ""}
-                </p>
-              </div>
-
-              {item.status === "completed" && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => togglePublic(item)}
-                    disabled={busyId === item.id}
-                    className="btn flex-1 text-xs"
-                  >
-                    {item.is_public ? "비공개로" : "갤러리 공개"}
-                  </button>
-                  <button onClick={() => download(item)} className="btn-primary flex-1 text-xs">
-                    PNG
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {items.length > 0 && (
+        <div className="overflow-x-auto rounded-md border-2 border-ink shadow-pixel">
+          <table className="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b-2 border-ink bg-ink/5 text-left text-xs uppercase text-gray-600">
+                <th className="px-3 py-2 font-bold">미리보기</th>
+                <th className="px-3 py-2 font-bold">프롬프트</th>
+                <th className="px-3 py-2 font-bold">모델</th>
+                <th className="px-3 py-2 font-bold">상태</th>
+                <th className="px-3 py-2 font-bold">시각</th>
+                <th className="px-3 py-2 text-right font-bold">작업</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => {
+                const meta = providerMeta(item.provider);
+                return (
+                  <tr key={item.id} className="border-b border-ink/20 align-middle">
+                    <td className="px-3 py-2">
+                      {item.status === "completed" && item.pixels ? (
+                        <Link
+                          href={`/mypage/${item.id}`}
+                          className="pixel-grid block h-12 w-12 rounded-sm border-2 border-ink bg-paper transition-opacity hover:opacity-80"
+                          aria-label="작품 상세 보기"
+                        >
+                          <PixelPreview pixels={item.pixels} size={item.size} scale={6} />
+                        </Link>
+                      ) : (
+                        <div className="pixel-grid flex h-12 w-12 items-center justify-center rounded-sm border-2 border-ink bg-paper">
+                          {item.status === "failed" ? (
+                            <span className="text-accent">✕</span>
+                          ) : (
+                            <span className="animate-pulse">▦</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td className="max-w-[260px] px-3 py-2">
+                      {item.status === "completed" ? (
+                        <Link
+                          href={`/mypage/${item.id}`}
+                          className="line-clamp-2 font-semibold hover:underline"
+                          title={item.prompt}
+                        >
+                          {item.prompt}
+                        </Link>
+                      ) : (
+                        <p className="line-clamp-2 font-semibold" title={item.prompt}>
+                          {item.prompt}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500">{item.size}×{item.size}</p>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs">
+                      {meta.emoji} {meta.label}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2">
+                      <StatusBadge status={item.status} reason={item.failureReason} />
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
+                      {formatTime(item.created_at)}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right">
+                      {item.status === "completed" ? (
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={() => togglePublic(item)}
+                            disabled={busyId === item.id}
+                            className="btn text-xs"
+                          >
+                            {item.is_public ? "비공개" : "공개"}
+                          </button>
+                          <button onClick={() => download(item)} className="btn-primary text-xs">
+                            PNG
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
+  );
+}
+
+function StatusBadge({ status, reason }: { status: Status; reason: string | null }) {
+  if (status === "completed") {
+    return (
+      <span className="rounded-sm border border-ink bg-emerald-200 px-1.5 py-0.5 text-xs font-bold">
+        완료
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span
+        className="rounded-sm border border-ink bg-accent/20 px-1.5 py-0.5 text-xs font-bold text-accent"
+        title={reason ?? undefined}
+      >
+        실패 (환불됨)
+      </span>
+    );
+  }
+  return (
+    <span className="animate-pulse rounded-sm border border-ink bg-amber-200 px-1.5 py-0.5 text-xs font-bold">
+      제작 중…
+    </span>
   );
 }

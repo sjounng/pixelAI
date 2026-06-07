@@ -18,9 +18,6 @@ export default async function Nav() {
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex">
           <Link href="/generate" className="hover:text-accent">생성기</Link>
-          {user && (
-            <Link href="/queue" className="hover:text-accent">대기열</Link>
-          )}
           <Link href="/gallery"  className="hover:text-accent">갤러리</Link>
           <Link href="/shop"     className="hover:text-accent">토큰 충전</Link>
           <Link href="/mypage"   className="hover:text-accent">마이페이지</Link>
@@ -40,6 +37,12 @@ export default async function Nav() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              <Link
+                href="/queue"
+                className="hidden text-sm font-medium hover:text-accent sm:inline"
+              >
+                대기열
+              </Link>
               <TokenBadge />
               <span className="hidden text-xs text-gray-600 sm:inline">
                 {user.name ?? user.email}

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PROVIDERS, Provider } from "@/lib/ai";
 
 type Size = 16 | 32;
@@ -29,7 +28,21 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
 const PENDING_STORAGE_KEY = "pixelai:pending-generation";
-const QUEUE_NOTICE_KEY = "pixelai:queue-notice";
+
+function errorMessage(data: { error?: string } & Record<string, unknown>): string {
+  switch (data.error) {
+    case "session_invalid":
+      return "세션이 만료되었습니다. 다시 로그인해 주세요.";
+    case "insufficient_tokens":
+      return `토큰이 부족합니다. (필요 ${data.cost} · 잔액 ${data.balance})`;
+    case "provider_not_configured":
+      return `${data.provider} API 키가 설정되지 않았습니다.`;
+    case "prompt_too_long":
+      return `프롬프트가 너무 깁니다. (최대 ${data.limit}자)`;
+    default:
+      return "생성 요청에 실패했습니다.";
+  }
+}
 const PENDING_MAX_AGE_MS = 150_000;
 const POLL_INTERVAL_MS = 2000;
 const NORMAL_PROMPT_LIMIT = 200;
@@ -61,7 +74,14 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
   const [useSearch, setUseSearch] = useState(false);
   const [basePixels, setBasePixels] = useState<string[][] | null>(null);
-  const router = useRouter();
+  const [toast, setToast] = useState<{ msg: string; kind: "info" | "error" } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (msg: string, kind: "info" | "error" = "info") => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ msg, kind });
+    toastTimer.current = setTimeout(() => setToast(null), 3500);
+  };
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -255,12 +275,12 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
     }
   };
 
-  // 생성은 백그라운드로 보내고 즉시 대기열로 이동한다. 요청(fetch)은 컴포넌트가
-  // 언마운트돼도 브라우저가 응답까지 유지하므로, 모델을 바꾸거나 페이지를 옮겨도
-  // 진행 중인 생성이 사라지지 않는다. 대기열 페이지가 상태를 폴링해 보여준다.
+  // 생성은 백그라운드로 보내고 생성기에는 그대로 남는다. 요청(fetch)은 페이지를
+  // 옮기거나 모델을 바꿔도 브라우저가 응답까지 유지하므로 진행 중인 생성이 사라지지
+  // 않는다. 결과는 대기열 페이지에서 폴링해 확인한다.
   const handleGenerate = () => {
     const p = prompt.trim();
-    if (!p || loading || available.length === 0) return;
+    if (!p || available.length === 0) return;
 
     const body = {
       prompt: p,
@@ -280,14 +300,8 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
     })
       .then(async (res) => {
         if (!res.ok) {
-          // 생성 전 단계 에러(토큰 부족/세션 만료 등)는 대기열에 행이 안 생기므로
-          // 대기열 페이지가 읽어 배너로 보여줄 수 있게 sessionStorage에 남긴다.
           const data = await res.json().catch(() => ({}));
-          try {
-            sessionStorage.setItem(QUEUE_NOTICE_KEY, JSON.stringify(data));
-          } catch {
-            // 무시
-          }
+          showToast(errorMessage(data), "error");
         }
         window.dispatchEvent(new Event("tokens:update"));
       })
@@ -295,7 +309,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         // 네트워크 오류여도 서버에선 진행 중일 수 있음 — 대기열 폴링이 회수.
       });
 
-    router.push("/queue");
+    showToast("대기열로 이동되었습니다", "info");
   };
 
   const handleDownload = () => {
@@ -524,8 +538,9 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               style={{ imageRendering: "pixelated" }}
             />
           ) : (
-            <p className="text-sm text-gray-500">
-              {loading ? `${provider}가 픽셀을 채우는 중…` : "여기에 결과가 표시됩니다."}
+            <p className="px-4 text-center text-sm text-gray-500">
+              생성을 누르면 백그라운드로 제작됩니다.{" "}
+              <Link href="/queue" className="underline">대기열</Link>에서 결과를 확인하세요.
             </p>
           )}
         </div>
@@ -549,6 +564,24 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           </div>
         )}
       </section>
+
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+          <div
+            className={
+              "pointer-events-auto flex items-center gap-3 rounded-md border-2 border-ink px-4 py-2 text-sm font-semibold shadow-pixel " +
+              (toast.kind === "error" ? "bg-accent text-paper" : "bg-ink text-paper")
+            }
+          >
+            <span>{toast.kind === "error" ? "⚠ " : "✅ "}{toast.msg}</span>
+            {toast.kind === "info" && (
+              <Link href="/queue" className="underline">
+                대기열 보기
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
