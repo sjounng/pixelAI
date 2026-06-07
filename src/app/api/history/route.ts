@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   const useCursor = url.searchParams.has("cursor") || url.searchParams.has("limit");
   const limit = Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10) || 20);
   const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+  const q = url.searchParams.get("q");
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
   if (isPublic) {
     const result = useCursor
       ? await getPublicArtworksCursor({ cursor: cursorParam, limit })
-      : await getPublicArtworks({ page });
+      : await getPublicArtworks({ page, q });
     const wishlistMap = await attachWishlist(result.items);
     return NextResponse.json({ ...result, wishlistMap });
   }
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
   await reapStalePendingArtworks(userId, unlimited).catch(() => {});
 
   const result = useCursor
-    ? await getUserArtworksCursor(userId, { cursor: cursorParam, limit })
+    ? await getUserArtworksCursor(userId, { cursor: cursorParam, limit, q })
     : await getUserArtworks(userId, { page });
   const wishlistMap = await attachWishlist(result.items);
   return NextResponse.json({ ...result, wishlistMap });

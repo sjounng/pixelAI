@@ -2,6 +2,8 @@ import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import TokenBadge from "@/components/TokenBadge";
 import Logo from "@/components/Logo";
+import QueueNavLink from "@/components/QueueNavLink";
+import QueueWatcher from "@/components/QueueWatcher";
 import { isAdminEmail } from "@/lib/env";
 
 export default async function Nav() {
@@ -10,6 +12,8 @@ export default async function Nav() {
   const isAdmin = isAdminEmail(user?.email);
 
   return (
+    <>
+    {user && <QueueWatcher />}
     <header className="border-b-2 border-ink bg-paper">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight">
@@ -37,12 +41,7 @@ export default async function Nav() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <Link
-                href="/queue"
-                className="hidden text-sm font-medium hover:text-accent sm:inline"
-              >
-                대기열
-              </Link>
+              <QueueNavLink className="hidden text-sm font-medium hover:text-accent sm:inline" />
               <TokenBadge />
               <span className="hidden text-xs text-gray-600 sm:inline">
                 {user.name ?? user.email}
@@ -65,5 +64,6 @@ export default async function Nav() {
         </div>
       </div>
     </header>
+    </>
   );
 }

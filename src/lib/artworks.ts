@@ -16,6 +16,7 @@ export interface Artwork {
 interface ListParams {
   page?: number;
   pageSize?: number;
+  q?: string | null;
 }
 
 interface ListResult {
@@ -27,6 +28,7 @@ interface ListResult {
 interface CursorParams {
   cursor?: string | null;
   limit?: number;
+  q?: string | null;
 }
 
 interface CursorResult {
@@ -77,10 +79,15 @@ function toApi(a: DbArtwork): Artwork {
 const COMPLETED = { status: "completed" } as const;
 
 export async function getPublicArtworks(
-  { page = 1, pageSize = DEFAULT_PAGE_SIZE }: ListParams = {}
+  { page = 1, pageSize = DEFAULT_PAGE_SIZE, q }: ListParams = {}
 ): Promise<ListResult> {
   const skip = (page - 1) * pageSize;
-  const where = { isPublic: true, ...COMPLETED };
+  const search = q?.trim();
+  const where = {
+    isPublic: true,
+    ...COMPLETED,
+    ...(search ? { prompt: { contains: search, mode: "insensitive" as const } } : {})
+  };
   const [rows, total] = await Promise.all([
     prisma.artwork.findMany({
       where,
@@ -113,11 +120,16 @@ export async function getUserArtworks(
 
 export async function getUserArtworksCursor(
   userId: string,
-  { cursor, limit = DEFAULT_CURSOR_LIMIT }: CursorParams = {}
+  { cursor, limit = DEFAULT_CURSOR_LIMIT, q }: CursorParams = {}
 ): Promise<CursorResult> {
   const take = Math.min(Math.max(limit, 1), 50);
+  const search = q?.trim();
   const rows = await prisma.artwork.findMany({
-    where: { userId, ...COMPLETED },
+    where: {
+      userId,
+      ...COMPLETED,
+      ...(search ? { prompt: { contains: search, mode: "insensitive" as const } } : {})
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: take + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {})

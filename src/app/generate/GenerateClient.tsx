@@ -319,6 +319,8 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
       });
 
     showToast("대기열로 이동되었습니다", "info");
+    // 우측 대기열 패널이 즉시 갱신되도록 알림.
+    window.dispatchEvent(new Event("queue:poke"));
   };
 
   const handleDownload = () => {

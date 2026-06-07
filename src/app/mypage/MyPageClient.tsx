@@ -12,7 +12,9 @@ import {
   IconEdit,
   IconRegenerate,
   IconDelete,
-  IconCharge
+  IconCharge,
+  IconSearch,
+  IconClose
 } from "@/components/icons";
 import type { Artwork } from "@/lib/artworks";
 
@@ -38,6 +40,9 @@ export default function MyPageClient() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -58,7 +63,8 @@ export default function MyPageClient() {
 
   const fetchPage = useCallback(
     async (
-      after: string | null
+      after: string | null,
+      q: string
     ): Promise<{
       items: Artwork[];
       nextCursor: string | null;
@@ -66,6 +72,7 @@ export default function MyPageClient() {
     } | null> => {
       const qs = new URLSearchParams({ limit: String(PAGE_LIMIT) });
       if (after) qs.set("cursor", after);
+      if (q.trim()) qs.set("q", q.trim());
       const res = await fetch(`/api/history?${qs.toString()}`, { cache: "no-store" });
       if (!res.ok) return null;
       return res.json();
@@ -73,31 +80,48 @@ export default function MyPageClient() {
     []
   );
 
-  const loadFirst = useCallback(async () => {
-    const [tokenRes, historyData] = await Promise.all([
-      fetch("/api/token", { cache: "no-store" }),
-      fetchPage(null)
-    ]);
-    if (tokenRes.ok) {
-      const d = await tokenRes.json();
-      setBalance(d.balance);
-      setTxs(d.transactions ?? []);
-    }
-    if (historyData) {
-      setItems(historyData.items ?? []);
-      setWishlistMap(historyData.wishlistMap ?? {});
-      setCursor(historyData.nextCursor ?? null);
-      setHasMore(Boolean(historyData.nextCursor));
-    }
-    setLoading(false);
-  }, [fetchPage]);
+  // 토큰 잔액·활동은 검색과 무관하게 최초 1회만 로드.
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/token", { cache: "no-store" });
+      if (res.ok) {
+        const d = await res.json();
+        setBalance(d.balance);
+        setTxs(d.transactions ?? []);
+      }
+    })();
+  }, []);
+
+  // 검색어 디바운스.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // 검색어가 바뀌면 첫 페이지부터 다시 로드.
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      const data = await fetchPage(null, debouncedQuery);
+      if (cancelled) return;
+      setItems(data?.items ?? []);
+      setWishlistMap(data?.wishlistMap ?? {});
+      setCursor(data?.nextCursor ?? null);
+      setHasMore(Boolean(data?.nextCursor));
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, fetchPage]);
 
   const loadMore = useCallback(async () => {
     if (inFlightRef.current || !hasMore || !cursor) return;
     inFlightRef.current = true;
     setLoadingMore(true);
     try {
-      const data = await fetchPage(cursor);
+      const data = await fetchPage(cursor, debouncedQuery);
       if (!data) return;
       setItems((prev) => [...prev, ...(data.items ?? [])]);
       setWishlistMap((prev) => ({ ...prev, ...(data.wishlistMap ?? {}) }));
@@ -107,11 +131,7 @@ export default function MyPageClient() {
       setLoadingMore(false);
       inFlightRef.current = false;
     }
-  }, [cursor, hasMore, fetchPage]);
-
-  useEffect(() => {
-    loadFirst();
-  }, [loadFirst]);
+  }, [cursor, hasMore, fetchPage, debouncedQuery]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -160,10 +180,6 @@ export default function MyPageClient() {
     router.push("/generate");
   };
 
-  if (loading) {
-    return <p className="text-sm text-gray-500">불러오는 중…</p>;
-  }
-
   return (
     <div className="space-y-8">
       <header className="grid gap-4 md:grid-cols-2">
@@ -196,9 +212,37 @@ export default function MyPageClient() {
       </header>
 
       <section>
-        <h2 className="mb-3 text-2xl font-bold">내 작품</h2>
-        {items.length === 0 ? (
-          <p className="text-sm text-gray-500">아직 생성한 작품이 없습니다.</p>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-bold">내 작품</h2>
+          <div className="relative w-full max-w-xs">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <IconSearch />
+            </span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="제목으로 검색"
+              className="input w-full text-sm"
+              style={{ paddingLeft: "2rem", paddingRight: query ? "2rem" : undefined }}
+              aria-label="제목으로 검색"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="검색 지우기"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-ink"
+              >
+                <IconClose />
+              </button>
+            )}
+          </div>
+        </div>
+        {loading ? (
+          <p className="text-sm text-gray-500">불러오는 중…</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            {debouncedQuery ? "검색 결과가 없습니다." : "아직 생성한 작품이 없습니다."}
+          </p>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
