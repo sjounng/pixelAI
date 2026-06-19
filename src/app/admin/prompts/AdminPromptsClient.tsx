@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import { IconSave, IconDelete } from "@/components/icons";
 import { ProviderDot } from "@/components/ProviderTag";
-import { PROVIDERS, Provider } from "@/lib/ai";
+import { FormSkeleton } from "@/components/Skeleton";
+import { PROVIDERS } from "@/lib/providers";
+import type { PromptKey } from "@/types/api";
+
+const KEY_LABEL: Record<PromptKey, string> = {
+  claude: "Claude",
+  convert: "변환기"
+};
 
 interface PromptItem {
-  provider: Provider;
+  provider: PromptKey;
   default_prompt: string;
   override: {
     system_prompt: string;
@@ -24,10 +31,9 @@ const initialState: ProviderState = { draft: "", saving: false, status: null };
 
 export default function AdminPromptsClient() {
   const [items, setItems] = useState<PromptItem[] | null>(null);
-  const [states, setStates] = useState<Record<Provider, ProviderState>>({
+  const [states, setStates] = useState<Record<PromptKey, ProviderState>>({
     claude: { ...initialState },
-    openai: { ...initialState },
-    gemini: { ...initialState }
+    convert: { ...initialState }
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -61,14 +67,14 @@ export default function AdminPromptsClient() {
     reload();
   }, []);
 
-  const updateDraft = (p: Provider, value: string) => {
+  const updateDraft = (p: PromptKey, value: string) => {
     setStates((prev) => ({
       ...prev,
       [p]: { ...prev[p], draft: value, status: null }
     }));
   };
 
-  const save = async (p: Provider) => {
+  const save = async (p: PromptKey) => {
     const draft = states[p].draft;
     if (!draft.trim()) return;
     setStates((prev) => ({ ...prev, [p]: { ...prev[p], saving: true, status: null } }));
@@ -89,7 +95,7 @@ export default function AdminPromptsClient() {
     }
   };
 
-  const resetToDefault = async (p: Provider) => {
+  const resetToDefault = async (p: PromptKey) => {
     if (!confirm(`${p} 프롬프트를 코드 기본값으로 되돌릴까요? (내 오버라이드 삭제)`)) return;
     setStates((prev) => ({ ...prev, [p]: { ...prev[p], saving: true, status: null } }));
     const res = await fetch(`/api/admin/prompts/${p}`, { method: "DELETE" });
@@ -101,7 +107,7 @@ export default function AdminPromptsClient() {
     }
   };
 
-  const fillFromDefault = (p: Provider) => {
+  const fillFromDefault = (p: PromptKey) => {
     const item = items?.find((i) => i.provider === p);
     if (!item) return;
     updateDraft(p, item.default_prompt);
@@ -111,7 +117,7 @@ export default function AdminPromptsClient() {
     return <p className="text-sm text-accent">{error}</p>;
   }
   if (!items) {
-    return <p className="text-sm text-gray-500">불러오는 중…</p>;
+    return <FormSkeleton />;
   }
 
   return (
@@ -133,7 +139,7 @@ export default function AdminPromptsClient() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="inline-flex items-center gap-1.5 text-xl font-bold">
                 {meta && <ProviderDot color={meta.color} />}
-                {meta?.label ?? it.provider}
+                {KEY_LABEL[it.provider] ?? it.provider}
               </h2>
               <div className="text-xs text-gray-500">
                 {isOverridden ? (

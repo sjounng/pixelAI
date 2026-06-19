@@ -1,14 +1,10 @@
 import Link from "next/link";
-import { getPublicArtworks } from "@/lib/artworks";
 import PixelPreview from "@/components/PixelPreview";
+import RecentPublicArtworks from "./RecentPublicArtworks";
 
 export const revalidate = 60;
 
-export default async function LandingPage() {
-  const artworks = await getPublicArtworks({ page: 1, pageSize: 8 }).catch(
-    () => ({ items: [], total: 0 })
-  );
-
+export default function LandingPage() {
   return (
     <div className="space-y-16">
       <section className="grid items-center gap-10 md:grid-cols-2">
@@ -49,20 +45,7 @@ export default async function LandingPage() {
             전체 보기 →
           </Link>
         </div>
-        {artworks.items.length === 0 ? (
-          <p className="text-sm text-gray-500">아직 공개된 작품이 없습니다.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {artworks.items.map((a) => (
-              <div key={a.id} className="card">
-                <PixelPreview pixels={a.pixel_data} size={a.size} />
-                <p className="mt-2 truncate text-xs text-gray-600">
-                  {a.prompt}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        <RecentPublicArtworks />
       </section>
 
       <section className="grid gap-6 md:grid-cols-3">

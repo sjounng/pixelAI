@@ -1,64 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
-import { isAdminEmail } from "@/lib/env";
-import { isProvider } from "@/lib/ai";
+import { NextRequest } from "next/server";
+import { proxyToBackend } from "@/lib/api-proxy";
 
 export const runtime = "nodejs";
-
-const MAX_PROMPT_LENGTH = 32_000;
 
 interface Ctx {
   params: Promise<{ provider: string }>;
 }
 
-async function authorize(): Promise<string | null> {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  if (!isAdminEmail(session.user.email)) return null;
-  return session.user.id;
-}
-
 export async function PUT(req: NextRequest, { params }: Ctx) {
-  const userId = await authorize();
-  if (!userId) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
   const { provider } = await params;
-  if (!isProvider(provider)) {
-    return NextResponse.json({ error: "invalid_provider" }, { status: 400 });
-  }
-
-  const body = await req.json().catch(() => ({}));
-  const systemPrompt = typeof body.system_prompt === "string" ? body.system_prompt : "";
-  if (!systemPrompt.trim()) {
-    return NextResponse.json({ error: "prompt_required" }, { status: 400 });
-  }
-  if (systemPrompt.length > MAX_PROMPT_LENGTH) {
-    return NextResponse.json({ error: "prompt_too_long" }, { status: 413 });
-  }
-
-  const row = await prisma.promptOverride.upsert({
-    where: { provider_userId: { provider, userId } },
-    update: { systemPrompt },
-    create: { provider, userId, systemPrompt }
-  });
-  return NextResponse.json({
-    provider: row.provider,
-    updated_at: row.updatedAt.toISOString()
-  });
+  return proxyToBackend(req, `/api/admin/prompts/${provider}`);
 }
 
-// 본인 오버라이드 제거 → 코드 기본값으로 롤백
-export async function DELETE(_req: NextRequest, { params }: Ctx) {
-  const userId = await authorize();
-  if (!userId) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
+export async function DELETE(req: NextRequest, { params }: Ctx) {
   const { provider } = await params;
-  if (!isProvider(provider)) {
-    return NextResponse.json({ error: "invalid_provider" }, { status: 400 });
-  }
-  await prisma.promptOverride.deleteMany({ where: { provider, userId } });
-  return NextResponse.json({ ok: true });
+  return proxyToBackend(req, `/api/admin/prompts/${provider}`);
 }

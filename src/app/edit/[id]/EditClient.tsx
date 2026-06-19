@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconSave, IconEraser, IconPen, IconCheck } from "@/components/icons";
 import ColorPicker from "@/components/ColorPicker";
+import { FormSkeleton } from "@/components/Skeleton";
 
 interface Props {
   artworkId: string;
@@ -107,7 +108,7 @@ export default function EditClient({ artworkId }: Props) {
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-500">불러오는 중…</p>;
+  if (loading) return <FormSkeleton />;
   if (error && !pixels) {
     return (
       <div className="space-y-4">

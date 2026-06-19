@@ -172,7 +172,7 @@ export default function WishlistStar({ artworkId, initialFolderId, className }: 
 
       {open && (
         <div
-          className="absolute right-0 top-full z-30 mt-1 w-56 rounded-md border-2 border-ink bg-paper p-2 text-xs shadow-pixel"
+          className="anim-pop absolute right-0 top-full z-30 mt-1 w-56 rounded-md border-2 border-ink bg-paper p-2 text-xs shadow-pixel"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="mb-1 font-semibold text-gray-700">

@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")  // Supabase pooled (port 6543, transaction mode) — 런타임 쿼리용
-  directUrl = env("DIRECT_URL")    // Supabase direct (port 5432) — 마이그레이션/db push용
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ── NextAuth + 앱 유저 ──

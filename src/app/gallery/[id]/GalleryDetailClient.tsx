@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { DetailSkeleton } from "@/components/Skeleton";
 import { IconCopy, IconDownload } from "@/components/icons";
 import ProviderTag from "@/components/ProviderTag";
 
@@ -107,7 +108,7 @@ export default function GalleryDetailClient({ artworkId }: Props) {
   };
 
   if (loading) {
-    return <p className="text-sm text-gray-500">불러오는 중…</p>;
+    return <DetailSkeleton />;
   }
   if (error || !artwork) {
     return (

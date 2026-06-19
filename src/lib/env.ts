@@ -25,24 +25,14 @@ export const env = {
   // 검색을 강제할지 여부. 켜면 첫 호출에서 web_search를 tool_choice로 강제 + 프롬프트 명시.
   webSearchForce: () => /^(1|true|yes|on)$/i.test(process.env.ANTHROPIC_WEB_SEARCH_FORCE ?? ""),
 
-  openaiApiKey: () => required("OPENAI_API_KEY"),
-  openaiModel: () => optional("OPENAI_MODEL", "gpt-4o-2024-08-06"),
-
-  googleApiKey: () => required("GOOGLE_AI_API_KEY"),
-  googleModel: () => optional("GOOGLE_AI_MODEL", "gemini-3.5-flash"),
-
   stripeSecretKey: () => required("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: () => required("STRIPE_WEBHOOK_SECRET"),
 
   appUrl: () => optional("NEXT_PUBLIC_APP_URL", "http://localhost:3000")
 };
 
-export function isProviderConfigured(provider: "claude" | "openai" | "gemini"): boolean {
-  switch (provider) {
-    case "claude": return Boolean(process.env.ANTHROPIC_API_KEY);
-    case "openai": return Boolean(process.env.OPENAI_API_KEY);
-    case "gemini": return Boolean(process.env.GOOGLE_AI_API_KEY);
-  }
+export function isProviderConfigured(_provider: "claude"): boolean {
+  return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
 export function isGoogleAuthConfigured(): boolean {

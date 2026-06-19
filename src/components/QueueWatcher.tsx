@@ -10,13 +10,11 @@ interface QueueItem {
   status: "pending" | "completed" | "failed";
 }
 
-const POLL_MS = 3000;
-
 /**
  * 화면 우측에 떠서 진행 중인 생성 대기열을 실시간으로 보여주는 패널.
- * 단일 폴러로 동작하며, 펜딩 개수를 "queue:status" 이벤트로 브로드캐스트해
+ * 단일 SSE 구독으로 동작하며, 펜딩 개수를 "queue:status" 이벤트로 브로드캐스트해
  * 네비게이션의 대기열(N) 카운트와 공유한다.
- * 다른 곳(생성기)에서 "queue:poke"를 쏘면 즉시 폴링 + 패널을 다시 띄운다.
+ * 다른 곳(생성기)에서 "queue:poke"를 쏘면 즉시 갱신 + 패널을 다시 띄운다.
  */
 export default function QueueWatcher() {
   const [items, setItems] = useState<QueueItem[]>([]);
@@ -24,7 +22,28 @@ export default function QueueWatcher() {
   const [keepUntil, setKeepUntil] = useState(0);
   const prevPendingRef = useRef(0);
 
-  const poll = useCallback(async () => {
+  const applyQueue = useCallback((data: { items?: unknown[] }) => {
+    const list: QueueItem[] = (data.items ?? []).map(
+      (i) => {
+        const item = i as { id: string; prompt: string; status: QueueItem["status"] };
+        return {
+          id: item.id,
+          prompt: item.prompt,
+          status: item.status
+        };
+      }
+    );
+    setItems(list);
+    const pending = list.filter((i) => i.status === "pending").length;
+    window.dispatchEvent(new CustomEvent("queue:status", { detail: { pending } }));
+    // 펜딩이 막 0이 되면 완료 결과를 잠깐 더 보여준다.
+    if (prevPendingRef.current > 0 && pending === 0) {
+      setKeepUntil(Date.now() + 5000);
+    }
+    prevPendingRef.current = pending;
+  }, []);
+
+  const fetchQueue = useCallback(async () => {
     try {
       const res = await fetch("/api/generate/queue", { cache: "no-store" });
       if (!res.ok) {
@@ -33,41 +52,35 @@ export default function QueueWatcher() {
         return;
       }
       const data = await res.json();
-      const list: QueueItem[] = (data.items ?? []).map(
-        (i: { id: string; prompt: string; status: QueueItem["status"] }) => ({
-          id: i.id,
-          prompt: i.prompt,
-          status: i.status
-        })
-      );
-      setItems(list);
-      const pending = list.filter((i) => i.status === "pending").length;
-      window.dispatchEvent(new CustomEvent("queue:status", { detail: { pending } }));
-      // 펜딩이 막 0이 되면 완료 결과를 잠깐 더 보여준다.
-      if (prevPendingRef.current > 0 && pending === 0) {
-        setKeepUntil(Date.now() + 5000);
-      }
-      prevPendingRef.current = pending;
+      applyQueue(data);
     } catch {
-      // 일시 오류는 다음 폴링에서 복구
+      // EventSource 재연결 또는 다음 사용자 액션에서 복구.
     }
-  }, []);
+  }, [applyQueue]);
 
   useEffect(() => {
-    void poll();
-    const timer = setInterval(() => {
-      if (!document.hidden) void poll();
-    }, POLL_MS);
+    void fetchQueue();
+    const events = new EventSource("/api/generate/events");
+    events.addEventListener("queue", (event) => {
+      try {
+        applyQueue(JSON.parse(event.data));
+      } catch {
+        // 손상된 이벤트는 무시하고 연결을 유지.
+      }
+    });
+    events.onerror = () => {
+      if (!document.hidden) void fetchQueue();
+    };
     const onPoke = () => {
       setDismissed(false);
-      void poll();
+      void fetchQueue();
     };
     window.addEventListener("queue:poke", onPoke);
     return () => {
-      clearInterval(timer);
+      events.close();
       window.removeEventListener("queue:poke", onPoke);
     };
-  }, [poll]);
+  }, [applyQueue, fetchQueue]);
 
   const pending = items.filter((i) => i.status === "pending").length;
   const keep = keepUntil > Date.now();
@@ -78,7 +91,7 @@ export default function QueueWatcher() {
   const shown = items.slice(0, 6);
 
   return (
-    <div className="fixed right-4 top-20 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-md border-2 border-ink bg-paper shadow-pixel">
+    <div className="anim-slide-right fixed right-4 top-20 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-md border-2 border-ink bg-paper shadow-pixel">
       <div className="flex items-center justify-between border-b-2 border-ink px-3 py-2">
         <p className="text-sm font-bold">
           대기열 {pending > 0 ? `· ${pending}개 제작 중` : "· 완료"}

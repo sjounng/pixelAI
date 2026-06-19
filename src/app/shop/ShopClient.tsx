@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { IconCharge } from "@/components/icons";
-import type { TokenPackage } from "@/lib/stripe";
+import type { TokenPackage } from "@/lib/token-packages";
 
 interface Props {
   packages: TokenPackage[];

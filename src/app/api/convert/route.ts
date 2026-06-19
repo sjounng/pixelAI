@@ -4,5 +4,5 @@ import { proxyToBackend } from "@/lib/api-proxy";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  return proxyToBackend(req, "/api/auth/signup");
+  return proxyToBackend(req, "/api/convert");
 }

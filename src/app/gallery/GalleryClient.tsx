@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { ArtworkGridSkeleton } from "@/components/Skeleton";
 import { IconEdit, IconSearch, IconClose } from "@/components/icons";
-import type { Artwork } from "@/lib/artworks";
+import type { Artwork } from "@/types/api";
 
 interface Props {
   initial: Artwork[];
@@ -23,7 +24,7 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
   const [searching, setSearching] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   // 현재 로드된 검색어. SSR 초기 데이터는 q="" 이므로 빈 문자열로 시작.
-  const loadedQueryRef = useRef("");
+  const loadedQueryRef = useRef(initial.length > 0 ? "" : null);
 
   const loadMore = async () => {
     if (loading || !hasMore) return;
@@ -118,7 +119,7 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
       <div className="mb-4 flex justify-end">{searchBox}</div>
 
       {searching ? (
-        <div className="card text-center text-sm text-gray-600">검색 중…</div>
+        <ArtworkGridSkeleton />
       ) : items.length === 0 ? (
         <div className="card text-center text-sm text-gray-600">
           {debouncedQuery
@@ -157,8 +158,10 @@ export default function GalleryClient({ initial, initialWishlist = {} }: Props) 
           </article>
         ))}
       </div>
-          <div ref={sentinelRef} className="h-12 text-center text-xs text-gray-500">
-            {loading ? "불러오는 중…" : hasMore ? "스크롤해서 더 보기" : "마지막 페이지입니다."}
+          <div ref={sentinelRef} className="flex min-h-28 items-end justify-center pt-12">
+            <span className="rounded-sm border border-ink/20 bg-paper/80 px-3 py-1 text-xs text-gray-500 shadow-sm">
+              {loading ? "불러오는 중…" : hasMore ? "스크롤해서 더 보기" : "마지막 페이지입니다."}
+            </span>
           </div>
         </>
       )}

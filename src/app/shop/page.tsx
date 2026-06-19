@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import ShopClient from "./ShopClient";
-import { TOKEN_PACKAGES } from "@/lib/stripe";
+import { TOKEN_PACKAGES } from "@/lib/token-packages";
 import { auth } from "@/auth";
 
 export const metadata = { title: "토큰 충전 · PixelAI" };

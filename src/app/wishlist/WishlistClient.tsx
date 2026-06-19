@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PixelPreview from "@/components/PixelPreview";
+import { WishlistSkeleton } from "@/components/Skeleton";
 import { IconDownload, IconDelete, IconSave, IconClose, IconEdit } from "@/components/icons";
 import Select from "@/components/Select";
-import type { WishlistItem, WishlistFolder } from "@/lib/wishlist";
+import type { WishlistItem, WishlistFolder } from "@/types/api";
 
 type SizeTab = 16 | 32;
 // "all" = 전체, null = 폴더 없음, string = 폴더 id
@@ -251,7 +252,7 @@ export default function WishlistClient() {
   };
 
   if (loading) {
-    return <p className="text-sm text-gray-500">불러오는 중…</p>;
+    return <WishlistSkeleton />;
   }
 
   if (items.length === 0) {

@@ -52,7 +52,7 @@ export default function Select({ value, onChange, options, className = "", place
       {open && (
         <ul
           role="listbox"
-          className="absolute z-30 mt-1 max-h-48 w-full overflow-y-auto rounded-md border-2 border-ink bg-paper text-[11px] shadow-pixel"
+          className="anim-pop absolute z-30 mt-1 max-h-48 w-full overflow-y-auto rounded-md border-2 border-ink bg-paper text-[11px] shadow-pixel"
         >
           {options.map((o) => {
             const selected = o.value === value;

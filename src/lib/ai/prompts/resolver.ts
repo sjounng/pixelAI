@@ -1,14 +1,21 @@
 import { prisma } from "@/lib/db";
 import type { Provider } from "@/lib/ai";
 import { CLAUDE_SYSTEM_PROMPT } from "./claude";
-import { OPENAI_SYSTEM_PROMPT } from "./openai";
-import { GEMINI_SYSTEM_PROMPT } from "./gemini";
+import { CONVERT_SYSTEM_PROMPT } from "./convert";
+
+// 프롬프트 오버라이드 키 = 생성(claude) + 변환기("convert").
+export type PromptKey = Provider | "convert";
+
+export const PROMPT_KEYS: PromptKey[] = ["claude", "convert"];
+
+export function isPromptKey(v: unknown): v is PromptKey {
+  return v === "claude" || v === "convert";
+}
 
 // 코드에 박혀 있는 기본값. DB에 override row가 없으면 이걸 사용.
-export const DEFAULT_PROMPTS: Record<Provider, string> = {
+export const DEFAULT_PROMPTS: Record<PromptKey, string> = {
   claude: CLAUDE_SYSTEM_PROMPT,
-  openai: OPENAI_SYSTEM_PROMPT,
-  gemini: GEMINI_SYSTEM_PROMPT
+  convert: CONVERT_SYSTEM_PROMPT
 };
 
 /**
@@ -17,7 +24,7 @@ export const DEFAULT_PROMPTS: Record<Provider, string> = {
  * DB 오류 시에는 안전하게 기본값으로 폴백.
  */
 export async function getSystemPrompt(
-  provider: Provider,
+  provider: PromptKey,
   userId: string | null | undefined
 ): Promise<string> {
   if (!userId) return DEFAULT_PROMPTS[provider];

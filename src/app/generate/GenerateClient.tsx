@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { PROVIDERS, Provider } from "@/lib/ai";
+import type { Provider } from "@/lib/providers";
 import {
   IconGenerate,
   IconSearch,
@@ -13,7 +13,7 @@ import {
   IconClose,
   IconImage
 } from "@/components/icons";
-import { ProviderDot } from "@/components/ProviderTag";
+import { SEARCH_SURCHARGE } from "@/lib/tokens";
 
 type Size = 16 | 32;
 
@@ -82,7 +82,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   const promptLimit = isAdmin ? ADMIN_PROMPT_LIMIT : NORMAL_PROMPT_LIMIT;
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState<Size>(16);
-  const [provider, setProvider] = useState<Provider>(available[0] ?? "claude");
+  const provider: Provider = "claude";
   const [useSearch, setUseSearch] = useState(false);
   const [basePixels, setBasePixels] = useState<string[][] | null>(null);
   const [toast, setToast] = useState<{ msg: string; kind: "info" | "error" } | null>(null);
@@ -203,7 +203,6 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
 
     setPrompt(marker.prompt);
     setSize(marker.size);
-    setProvider(marker.provider);
     setLoading(true);
 
     const controller = { stopped: false };
@@ -355,7 +354,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
     <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
       <section className="card space-y-4">
         {basePixels && (
-          <div className="flex items-start justify-between gap-2 rounded-md border-2 border-ink bg-amber-100 px-3 py-2 text-xs">
+          <div className="anim-pop flex items-start justify-between gap-2 rounded-md border-2 border-ink bg-amber-100 px-3 py-2 text-xs">
             <p className="flex items-center gap-1">
               <IconRegenerate />
               <span>
@@ -440,40 +439,19 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           )}
         </div>
 
-        <div>
-          <label className="text-sm font-bold">AI 모델</label>
-          <div className="mt-1 grid grid-cols-3 gap-2">
-            {PROVIDERS.map((p) => {
-              const enabled = available.includes(p.id);
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => enabled && setProvider(p.id)}
-                  disabled={!enabled}
-                  title={enabled ? "" : "API 키 미설정"}
-                  className={
-                    "inline-flex items-center justify-center gap-1.5 rounded-md border-2 border-ink px-3 py-2 text-sm font-semibold shadow-pixel disabled:cursor-not-allowed disabled:opacity-40 " +
-                    (provider === p.id && enabled ? "bg-ink text-paper" : "bg-paper text-ink")
-                  }
-                >
-                  <ProviderDot color={p.color} />
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-          {available.length === 0 && (
-            <p className="mt-1 text-xs text-accent">
-              어떤 AI 키도 설정되지 않았습니다. .env.local 확인.
-            </p>
-          )}
-        </div>
+        {available.length === 0 && (
+          <p className="text-xs text-accent">
+            ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local 확인.
+          </p>
+        )}
 
         {webSearchAvailable && provider === "claude" && !referenceImage && (
           <div>
             <label className="flex items-center justify-between gap-3 rounded-md border-2 border-ink bg-paper px-3 py-2 shadow-pixel">
               <span className="text-sm">
-                <span className="inline-flex items-center gap-1 font-bold"><IconSearch /> AI 검색</span>
+                <span className="inline-flex items-center gap-1 font-bold">
+                  <IconSearch /> AI 검색 <span className="text-accent">+{SEARCH_SURCHARGE} 토큰</span>
+                </span>
                 <span className="ml-1 text-xs text-gray-500">
                   생성 전 웹에서 대상을 조사 (정확도↑·다소 느려짐)
                 </span>
@@ -588,7 +566,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
           <div
             className={
-              "pointer-events-auto flex items-center gap-3 rounded-md border-2 border-ink px-4 py-2 text-sm font-semibold shadow-pixel " +
+              "anim-slide-up pointer-events-auto flex items-center gap-3 rounded-md border-2 border-ink px-4 py-2 text-sm font-semibold shadow-pixel " +
               (toast.kind === "error" ? "bg-accent text-paper" : "bg-ink text-paper")
             }
           >

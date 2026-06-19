@@ -23,6 +23,7 @@ export default async function Nav() {
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex">
           <Link href="/generate" className="hover:text-accent">생성기</Link>
+          <Link href="/convert"  className="hover:text-accent">변환기</Link>
           <Link href="/gallery"  className="hover:text-accent">갤러리</Link>
           <Link href="/shop"     className="hover:text-accent">토큰 충전</Link>
           <Link href="/mypage"   className="hover:text-accent">마이페이지</Link>

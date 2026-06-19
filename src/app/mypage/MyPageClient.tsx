@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { ArtworkGridSkeleton, DashboardSkeleton } from "@/components/Skeleton";
 import {
   IconMenu,
   IconPublic,
@@ -16,7 +17,7 @@ import {
   IconSearch,
   IconClose
 } from "@/components/icons";
-import type { Artwork } from "@/lib/artworks";
+import type { Artwork } from "@/types/api";
 
 const EDIT_STORAGE_KEY = "pixelai:edit-source";
 
@@ -180,6 +181,10 @@ export default function MyPageClient() {
     router.push("/generate");
   };
 
+  if (loading && items.length === 0) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="space-y-8">
       <header className="grid gap-4 md:grid-cols-2">
@@ -238,7 +243,7 @@ export default function MyPageClient() {
           </div>
         </div>
         {loading ? (
-          <p className="text-sm text-gray-500">불러오는 중…</p>
+          <ArtworkGridSkeleton />
         ) : items.length === 0 ? (
           <p className="text-sm text-gray-500">
             {debouncedQuery ? "검색 결과가 없습니다." : "아직 생성한 작품이 없습니다."}
@@ -287,7 +292,7 @@ export default function MyPageClient() {
                     {menuOpenId === a.id && (
                       <div
                         role="menu"
-                        className="absolute left-0 right-0 z-20 mt-1 w-full overflow-hidden rounded-md border-2 border-ink bg-paper text-[11px] shadow-pixel"
+                        className="anim-pop absolute left-0 right-0 z-20 mt-1 w-full overflow-hidden rounded-md border-2 border-ink bg-paper text-[11px] shadow-pixel"
                       >
                         <button
                           role="menuitem"
@@ -336,12 +341,14 @@ export default function MyPageClient() {
                 </article>
               ))}
             </div>
-            <div ref={sentinelRef} className="h-12 text-center text-xs text-gray-500">
-              {loadingMore
-                ? "불러오는 중…"
-                : hasMore
-                ? "스크롤해서 더 보기"
-                : "마지막 페이지입니다."}
+            <div ref={sentinelRef} className="flex min-h-28 items-end justify-center pt-12">
+              <span className="rounded-sm border border-ink/20 bg-paper/80 px-3 py-1 text-xs text-gray-500 shadow-sm">
+                {loadingMore
+                  ? "불러오는 중…"
+                  : hasMore
+                  ? "스크롤해서 더 보기"
+                  : "마지막 페이지입니다."}
+              </span>
             </div>
           </>
         )}

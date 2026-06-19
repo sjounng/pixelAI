@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PixelPreview from "@/components/PixelPreview";
 import WishlistStar from "@/components/WishlistStar";
+import { DetailSkeleton } from "@/components/Skeleton";
 import {
   IconPublic,
   IconPrivate,
@@ -174,7 +175,7 @@ export default function ArtworkDetailClient({ artworkId }: Props) {
   };
 
   if (loading) {
-    return <p className="text-sm text-gray-500">불러오는 중…</p>;
+    return <DetailSkeleton />;
   }
   if (error || !artwork) {
     return (

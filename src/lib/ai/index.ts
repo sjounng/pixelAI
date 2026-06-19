@@ -1,22 +1,12 @@
 import { generateWithClaude } from "./claude";
-import { generateWithOpenAI } from "./openai";
-import { generateWithGemini } from "./gemini";
+export { PROVIDERS, isProvider } from "@/lib/providers";
+export type { Provider } from "@/lib/providers";
 
-export type Provider = "claude" | "openai" | "gemini";
+// Claude 단일 모델.
 export type Pixels = string[][];
 
-export const PROVIDERS: { id: Provider; label: string; color: string }[] = [
-  { id: "claude", label: "Claude", color: "#d97757" },
-  { id: "openai", label: "GPT",    color: "#10a37f" },
-  { id: "gemini", label: "Gemini", color: "#4285f4" }
-];
-
-export function isProvider(v: unknown): v is Provider {
-  return v === "claude" || v === "openai" || v === "gemini";
-}
-
 export async function generatePixelArt(
-  provider: Provider,
+  provider: import("@/lib/providers").Provider,
   prompt: string,
   size: 16 | 32,
   referenceImage?: string,
@@ -24,12 +14,9 @@ export async function generatePixelArt(
   useSearch = false,
   basePixels?: string[][]
 ): Promise<Pixels> {
-  switch (provider) {
-    // 웹 검색(생성 전 참조 조사)은 현재 Claude에만 적용. basePixels는 재생성용.
-    case "claude": return generateWithClaude(prompt, size, referenceImage, userId, useSearch, basePixels);
-    case "openai": return generateWithOpenAI(prompt, size, referenceImage, userId, basePixels);
-    case "gemini": return generateWithGemini(prompt, size, referenceImage, userId, basePixels);
-  }
+  void provider; // 단일 모델
+  // 웹 검색(생성 전 참조 조사)은 Claude에만 적용. basePixels는 재생성용.
+  return generateWithClaude(prompt, size, referenceImage, userId, useSearch, basePixels);
 }
 
 export function parseDataUrl(dataUrl: string): { mediaType: string; base64: string } {

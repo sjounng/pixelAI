@@ -28,7 +28,6 @@ interface QueueItem {
   created_at: string;
 }
 
-const POLL_INTERVAL_MS = 2500;
 const NOTICE_KEY = "pixelai:queue-notice";
 
 function formatTime(iso: string): string {
@@ -102,32 +101,50 @@ export default function QueueClient() {
     }
   }, []);
 
+  const applyQueue = useCallback((data: { items?: unknown[] }) => {
+    if (stoppedRef.current) return;
+    setItems(Array.isArray(data.items) ? (data.items as QueueItem[]) : []);
+    setLoaded(true);
+  }, []);
+
   const fetchQueue = useCallback(async () => {
     try {
       const res = await fetch("/api/generate/queue");
       if (!res.ok) return;
       const data = await res.json();
-      if (stoppedRef.current) return;
-      setItems(Array.isArray(data.items) ? data.items : []);
-      setLoaded(true);
+      applyQueue(data);
     } catch {
-      // 일시적 네트워크 오류 — 다음 폴링에서 재시도
+      // EventSource 재연결 또는 다음 사용자 액션에서 복구.
     }
-  }, []);
+  }, [applyQueue]);
 
   useEffect(() => {
     stoppedRef.current = false;
     readNotice();
     void fetchQueue();
-    const timer = setInterval(() => {
+    const events = new EventSource("/api/generate/events");
+    events.addEventListener("queue", (event) => {
+      readNotice();
+      try {
+        applyQueue(JSON.parse(event.data));
+      } catch {
+        // 손상된 이벤트는 무시하고 연결 유지.
+      }
+    });
+    events.onerror = () => {
+      if (!document.hidden) void fetchQueue();
+    };
+    const onPoke = () => {
       readNotice();
       void fetchQueue();
-    }, POLL_INTERVAL_MS);
+    };
+    window.addEventListener("queue:poke", onPoke);
     return () => {
       stoppedRef.current = true;
-      clearInterval(timer);
+      events.close();
+      window.removeEventListener("queue:poke", onPoke);
     };
-  }, [fetchQueue, readNotice]);
+  }, [applyQueue, fetchQueue, readNotice]);
 
   const download = (item: QueueItem) => {
     if (!item.pixels) return;
@@ -176,7 +193,8 @@ export default function QueueClient() {
       </div>
 
       <p className="rounded-md border-2 border-dashed border-ink bg-paper px-3 py-2 text-xs text-gray-600">
-        최근 60분 내 작업이 제작 중·완료·실패 상태로 표시됩니다. 완료된 작품은 이후
+        최근 60분 내 작업이 제작 중·완료·실패 상태로 표시됩니다. 상태 변경은 실시간으로
+        갱신되며, 완료된 작품은 이후
         마이페이지에서 계속 확인할 수 있습니다.
       </p>
 

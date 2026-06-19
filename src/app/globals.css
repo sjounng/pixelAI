@@ -34,13 +34,46 @@ body {
   @apply rounded-lg border-2 border-ink bg-paper p-4 text-ink shadow-pixel;
 }
 
-/* 모든 버튼에 공통 누름 반응(레트로 프레스): 살짝 눌리며 그림자 제거 */
+/* 모든 버튼에 공통 모션: 호버 시 살짝 떠오르고, 누르면 눌리며 그림자 제거 */
 button:not(:disabled) {
-  transition: transform 60ms ease, box-shadow 60ms ease, background-color 120ms ease;
+  transition: transform 90ms ease, box-shadow 90ms ease, background-color 120ms ease;
+}
+button:not(:disabled):hover {
+  transform: translateY(-1px);
 }
 button:not(:disabled):active {
   transform: translate(1px, 1px);
   box-shadow: none;
+}
+/* 검색창처럼 호버·포커스·선택 시 푸른(accent2) 테두리 */
+button:not(:disabled):hover,
+button:not(:disabled):focus-visible,
+button[aria-pressed="true"],
+button[aria-checked="true"] {
+  outline: 2px solid #08d9d6;
+  outline-offset: 1px;
+}
+
+/* 등장 모션 유틸 */
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.anim-pop { animation: pop-in 120ms ease-out; transform-origin: top; }
+.anim-slide-up { animation: slide-up 200ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-slide-right { animation: slide-in-right 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop, .anim-slide-up, .anim-slide-right { animation: none; }
+  button:not(:disabled):hover { transform: none; }
 }
 
 .input {
@@ -49,4 +82,36 @@ button:not(:disabled):active {
 
 .badge {
   @apply inline-flex items-center gap-1 rounded-full border border-ink bg-paper px-2 py-0.5 text-xs font-medium text-ink;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #ece7dc;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  animation: skeleton-shimmer 1.25s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
 }

@@ -1,4 +1,4 @@
-import { PROVIDERS } from "@/lib/ai";
+import { PROVIDERS } from "@/lib/providers";
 
 export function ProviderDot({ color, className = "" }: { color: string; className?: string }) {
   return (
