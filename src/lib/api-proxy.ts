@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 function backendBaseUrl(): string | null {
-  return process.env.BACKEND_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
+  return process.env.BACKEND_API_BASE_URL ?? null;
 }
 
 export async function proxyToBackend(req: NextRequest, path: string): Promise<NextResponse> {
   const base = backendBaseUrl();
   if (!base) {
     return NextResponse.json(
-      { error: "backend_not_configured", detail: "Set BACKEND_API_BASE_URL or NEXT_PUBLIC_API_BASE_URL." },
+      { error: "backend_not_configured", detail: "Set BACKEND_API_BASE_URL." },
       { status: 503 }
     );
   }

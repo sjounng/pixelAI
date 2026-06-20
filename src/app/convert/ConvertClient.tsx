@@ -103,17 +103,32 @@ export default function ConvertClient() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-      <section className="card space-y-4">
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold">변환기</h1>
-          <p className="text-sm text-gray-600">
-            고해상도 픽셀아트 이미지를 16×16 / 32×32 픽셀로 되돌립니다.
-          </p>
+          <p className="text-xs font-bold uppercase tracking-wide text-accent">Pixel Studio</p>
+          <h1 className="mt-1 text-3xl font-extrabold leading-tight md:text-4xl">
+            이미지 픽셀 변환
+          </h1>
         </div>
+        <div className="flex flex-wrap gap-2 text-xs font-bold">
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            Convert
+          </span>
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            {size}×{size}
+          </span>
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            {COST[size]} 토큰
+          </span>
+        </div>
+      </header>
 
+      <div className="rounded-xl border-2 border-ink bg-[#f4ecd9] p-3 shadow-pixel sm:p-5">
+        <div className="grid gap-5 xl:grid-cols-[440px_1fr]">
+      <section className="space-y-5 rounded-lg border-2 border-ink bg-paper/95 p-5 shadow-pixel">
         <div>
-          <label className="text-sm font-bold">이미지</label>
+          <label className="text-base font-extrabold">이미지</label>
           <input
             ref={fileInputRef}
             type="file"
@@ -126,12 +141,12 @@ export default function ConvertClient() {
             }}
           />
           {imageUrl ? (
-            <div className="relative mt-1 inline-block">
+            <div className="relative mt-2 inline-block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
                 alt="원본"
-                className="pixel-grid h-40 w-40 rounded-md border-2 border-ink object-contain shadow-pixel"
+                className="pixel-grid h-48 w-48 rounded-md border-2 border-ink object-contain shadow-pixel"
                 style={{ imageRendering: "pixelated" }}
               />
               <button
@@ -164,27 +179,26 @@ export default function ConvertClient() {
                 if (f) handleFile(f);
               }}
               className={
-                "mt-1 flex h-40 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-ink text-xs text-gray-600 transition-colors " +
+                "mt-2 flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-ink px-4 text-center text-base text-gray-600 transition-colors " +
                 (dragActive ? "bg-accent/10" : "bg-paper hover:bg-ink/5")
               }
             >
               <p className="inline-flex items-center gap-1 font-semibold">
                 <IconImage /> 이미지를 드래그하거나 클릭하여 업로드
               </p>
-              <p className="mt-1 text-gray-500">PNG / JPEG / WebP / GIF · 최대 8MB</p>
             </div>
           )}
         </div>
 
         <div>
-          <label className="text-sm font-bold">변환 해상도</label>
-          <div className="mt-1 flex gap-2">
+          <label className="text-base font-extrabold">변환 해상도</label>
+          <div className="mt-2 grid grid-cols-2 gap-3">
             {[16, 32].map((n) => (
               <button
                 key={n}
                 onClick={() => setSize(n as Size)}
                 className={
-                  "flex-1 rounded-md border-2 border-ink px-3 py-2 text-sm font-semibold shadow-pixel " +
+                  "min-h-14 rounded-md border-2 border-ink px-4 py-3 text-base font-extrabold shadow-pixel " +
                   (size === n ? "bg-ink text-paper" : "bg-paper text-ink")
                 }
               >
@@ -195,45 +209,48 @@ export default function ConvertClient() {
         </div>
 
         <div>
-          <label className="text-sm font-bold">이름 (선택)</label>
+          <label className="text-base font-extrabold">이름 (선택)</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={200}
             placeholder="예: 변환한 슬라임"
-            className="input mt-1 text-sm"
+            className="input mt-2"
           />
         </div>
 
         <button
           onClick={submit}
           disabled={!pixels || working}
-          className="btn-accent inline-flex w-full items-center justify-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-accent inline-flex min-h-14 w-full items-center justify-center gap-2 text-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
           <IconGenerate /> {working ? "변환 중…" : "AI 보정 후 저장"}
         </button>
-        <p className="text-xs text-gray-500">
-          업로드 즉시 1차 변환(미리보기)이 만들어지고, 저장 시 AI가 다듬어 대기열에 추가됩니다.
-        </p>
       </section>
 
-      <section className="card flex flex-col items-center justify-center gap-3">
-        <p className="text-xs uppercase text-gray-500">1차 변환 미리보기</p>
-        <div className="pixel-grid flex aspect-square w-full max-w-[420px] items-center justify-center rounded-md border-2 border-ink bg-paper p-2">
+      <section className="flex min-h-[620px] flex-col items-center justify-center gap-5 rounded-lg border-2 border-ink bg-[#efe2bd] p-5 shadow-pixel">
+        <div className="flex w-full items-center justify-between gap-3 text-xs font-bold uppercase text-gray-600">
+          <span>Preview Stage</span>
+          <span className="rounded-sm border border-ink bg-paper px-2 py-1">{size}px grid</span>
+        </div>
+        <div className="pixel-grid flex aspect-square w-full max-w-[560px] items-center justify-center rounded-lg border-2 border-ink bg-paper p-4 shadow-pixel">
           {pixels ? (
             <PixelPreview pixels={pixels} size={size} />
           ) : (
-            <p className="px-4 text-center text-sm text-gray-500">
-              이미지를 올리면 변환 미리보기가 표시됩니다.
-            </p>
+            <div className="flex h-full w-full flex-col items-center justify-center rounded-md border-2 border-dashed border-ink/30 px-8 text-center">
+              <p className="text-lg font-extrabold text-gray-600">이미지를 올려주세요.</p>
+              <p className="mt-2 text-sm text-gray-500">미리보기가 여기에 표시됩니다.</p>
+            </div>
           )}
         </div>
         {pixels && (
-          <Link href="/queue" className="text-xs underline">
+          <Link href="/queue" className="btn inline-flex">
             대기열에서 결과 확인 →
           </Link>
         )}
       </section>
+        </div>
+      </div>
 
       {toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">

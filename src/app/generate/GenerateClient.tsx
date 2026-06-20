@@ -351,10 +351,32 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-      <section className="card space-y-4">
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-accent">Pixel Studio</p>
+          <h1 className="mt-1 text-3xl font-extrabold leading-tight md:text-4xl">
+            새 픽셀 아트 만들기
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs font-bold">
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            Claude
+          </span>
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            {size}×{size}
+          </span>
+          <span className="rounded-md border-2 border-ink bg-paper px-3 py-1.5 shadow-pixel">
+            {COST[size] + (useSearch ? SEARCH_SURCHARGE : 0)} 토큰
+          </span>
+        </div>
+      </header>
+
+      <div className="rounded-xl border-2 border-ink bg-[#f4ecd9] p-3 shadow-pixel sm:p-5">
+        <div className="grid gap-5 xl:grid-cols-[440px_1fr]">
+      <section className="space-y-5 rounded-lg border-2 border-ink bg-paper/95 p-5 shadow-pixel">
         {basePixels && (
-          <div className="anim-pop flex items-start justify-between gap-2 rounded-md border-2 border-ink bg-amber-100 px-3 py-2 text-xs">
+          <div className="anim-pop flex items-start justify-between gap-3 rounded-md border-2 border-ink bg-amber-100 px-4 py-3 text-sm">
             <p className="flex items-center gap-1">
               <IconRegenerate />
               <span>
@@ -373,13 +395,13 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         )}
 
         <div>
-          <label className="text-sm font-bold">프롬프트</label>
+          <label className="text-base font-extrabold">프롬프트</label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="예: 다이아몬드 검, 픽셀 고양이, 8비트 우주선"
             rows={isAdmin ? 6 : 3}
-            className="input mt-1 resize-none"
+            className="input mt-2 min-h-36 resize-none leading-relaxed"
             maxLength={promptLimit}
           />
           <p className="mt-1 text-right text-xs text-gray-500">
@@ -389,7 +411,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         </div>
 
         <div>
-          <label className="text-sm font-bold">예시 이미지 (선택)</label>
+          <label className="text-base font-extrabold">예시 이미지 (선택)</label>
           <input
             ref={fileInputRef}
             type="file"
@@ -406,7 +428,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               <img
                 src={referenceImage}
                 alt="참고 이미지"
-                className="h-32 w-32 rounded-md border-2 border-ink object-cover shadow-pixel"
+                className="h-40 w-40 rounded-md border-2 border-ink object-cover shadow-pixel"
               />
               <button
                 type="button"
@@ -427,7 +449,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               onDragLeave={() => setDragActive(false)}
               onDrop={handleDrop}
               className={
-                "mt-1 flex h-32 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-ink text-xs text-gray-600 transition-colors " +
+                "mt-2 flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-ink px-4 text-center text-sm text-gray-600 transition-colors " +
                 (dragActive ? "bg-accent/10" : "bg-paper hover:bg-ink/5")
               }
             >
@@ -441,19 +463,16 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
 
         {available.length === 0 && (
           <p className="text-xs text-accent">
-            ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local 확인.
+            AI 생성 서버가 설정되지 않았습니다. 백엔드 환경변수를 확인해 주세요.
           </p>
         )}
 
         {webSearchAvailable && provider === "claude" && !referenceImage && (
           <div>
-            <label className="flex items-center justify-between gap-3 rounded-md border-2 border-ink bg-paper px-3 py-2 shadow-pixel">
-              <span className="text-sm">
+            <label className="flex items-center justify-between gap-4 rounded-md border-2 border-ink bg-[#fff7df] px-4 py-3 shadow-pixel">
+              <span className="text-base">
                 <span className="inline-flex items-center gap-1 font-bold">
                   <IconSearch /> AI 검색 <span className="text-accent">+{SEARCH_SURCHARGE} 토큰</span>
-                </span>
-                <span className="ml-1 text-xs text-gray-500">
-                  생성 전 웹에서 대상을 조사 (정확도↑·다소 느려짐)
                 </span>
               </span>
               <button
@@ -462,14 +481,14 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
                 aria-checked={useSearch}
                 onClick={() => setUseSearch((v) => !v)}
                 className={
-                  "relative h-6 w-11 shrink-0 rounded-full border-2 border-ink transition-colors " +
+                  "relative h-8 w-14 shrink-0 rounded-full border-2 border-ink transition-colors " +
                   (useSearch ? "bg-accent" : "bg-paper")
                 }
               >
                 <span
                   className={
-                    "absolute top-0.5 h-4 w-4 rounded-full border-2 border-ink bg-paper transition-all " +
-                    (useSearch ? "left-5" : "left-0.5")
+                    "absolute top-0.5 h-6 w-6 rounded-full border-2 border-ink bg-paper transition-all " +
+                    (useSearch ? "left-6" : "left-0.5")
                   }
                 />
               </button>
@@ -478,14 +497,14 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         )}
 
         <div>
-          <label className="text-sm font-bold">해상도</label>
-          <div className="mt-1 flex gap-2">
+          <label className="text-base font-extrabold">해상도</label>
+          <div className="mt-2 grid grid-cols-2 gap-3">
             {[16, 32].map((n) => (
               <button
                 key={n}
                 onClick={() => setSize(n as Size)}
                 className={
-                  "flex-1 rounded-md border-2 border-ink px-3 py-2 text-sm font-semibold shadow-pixel " +
+                  "min-h-14 rounded-md border-2 border-ink px-4 py-3 text-base font-extrabold shadow-pixel " +
                   (size === n ? "bg-ink text-paper" : "bg-paper text-ink")
                 }
               >
@@ -498,7 +517,7 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
         <button
           onClick={handleGenerate}
           disabled={loading || !prompt.trim() || available.length === 0}
-          className="btn-accent inline-flex w-full items-center justify-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-accent inline-flex min-h-14 w-full items-center justify-center gap-2 text-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
           <IconGenerate /> {loading ? "생성 중…" : "픽셀 아트 생성"}
         </button>
@@ -515,18 +534,14 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           </div>
         )}
 
-        <div className="border-t-2 border-dashed border-ink pt-3 text-xs text-gray-600">
-          <p className="font-bold">팁</p>
-          <ul className="ml-4 list-disc">
-            <li>주제를 단순하고 구체적으로 묘사하세요.</li>
-            <li>모델마다 화풍이 다릅니다. 여러 번 비교해보세요.</li>
-            <li>32×32는 디테일이 풍부하지만 토큰이 더 듭니다.</li>
-          </ul>
-        </div>
       </section>
 
-      <section className="card flex flex-col items-center justify-center gap-4">
-        <div className="pixel-grid flex aspect-square w-full max-w-[512px] items-center justify-center rounded-md border-2 border-ink bg-paper p-2">
+      <section className="flex min-h-[620px] flex-col items-center justify-center gap-5 rounded-lg border-2 border-ink bg-[#efe2bd] p-5 shadow-pixel">
+        <div className="flex w-full items-center justify-between gap-3 text-xs font-bold uppercase text-gray-600">
+          <span>Canvas Stage</span>
+          <span className="rounded-sm border border-ink bg-paper px-2 py-1">{size}px grid</span>
+        </div>
+        <div className="pixel-grid flex aspect-square w-full max-w-[640px] items-center justify-center rounded-lg border-2 border-ink bg-paper p-4 shadow-pixel">
           {result ? (
             <canvas
               ref={canvasRef}
@@ -534,10 +549,12 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
               style={{ imageRendering: "pixelated" }}
             />
           ) : (
-            <p className="px-4 text-center text-sm text-gray-500">
-              생성을 누르면 백그라운드로 제작됩니다.{" "}
-              <Link href="/queue" className="underline">대기열</Link>에서 결과를 확인하세요.
-            </p>
+            <div className="flex h-full w-full flex-col items-center justify-center rounded-md border-2 border-dashed border-ink/30 px-8 text-center">
+              <p className="text-lg font-extrabold text-gray-600">캔버스가 준비되었습니다.</p>
+              <p className="mt-2 max-w-sm text-sm text-gray-500">
+                결과는 <Link href="/queue" className="underline">대기열</Link>에서 확인할 수 있습니다.
+              </p>
+            </div>
           )}
         </div>
 
@@ -561,6 +578,8 @@ export default function GenerateClient({ available, isAdmin, webSearchAvailable 
           </div>
         )}
       </section>
+        </div>
+      </div>
 
       {toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">

@@ -1,12 +1,9 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
+import { authenticateCredentials, resolveOAuthUser } from "@/lib/backend-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: { signIn: "/sign-in" },
   providers: [
@@ -25,24 +22,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = String(creds?.password ?? "");
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user?.passwordHash) return null;
-
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image
-        };
+        return authenticateCredentials(email, password);
       }
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user?.id) token.sub = user.id;
+    async jwt({ token, user, account }) {
+      if (account?.provider === "google") {
+        const backendUser = await resolveOAuthUser(user);
+        token.sub = backendUser.id;
+        token.email = backendUser.email;
+        token.name = backendUser.name;
+        token.picture = backendUser.image;
+      } else if (user?.id) {
+        token.sub = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
