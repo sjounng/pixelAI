@@ -54,7 +54,7 @@ function errorMessage(data: { error?: string } & Record<string, unknown>): strin
       return "생성 요청에 실패했습니다.";
   }
 }
-const PENDING_MAX_AGE_MS = 150_000;
+const PENDING_MAX_AGE_MS = 10 * 60_000;
 const POLL_INTERVAL_MS = 2000;
 const NORMAL_PROMPT_LIMIT = 200;
 const ADMIN_PROMPT_LIMIT = 1000;
